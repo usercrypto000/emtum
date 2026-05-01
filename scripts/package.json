@@ -1,0 +1,21 @@
+{
+  "name": "scripts",
+  "version": "1.0.0",
+  "description": "TypeScript tooling for Emtun proof and alignment scripts",
+  "scripts": {
+    "poseidon-align": "tsx test/poseidon-align.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "type": "module",
+  "private": true,
+  "license": "MIT",
+  "dependencies": {
+    "@aztec/bb.js": "^4.0.4",
+    "@noir-lang/noir_js": "^1.0.0-beta.19"
+  },
+  "devDependencies": {
+    "@types/node": "^24.7.2",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3"
+  }
+}
