@@ -1,0 +1,100 @@
+<svg width="1600" height="900" viewBox="0 0 1600 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1600" height="900" fill="#F5F1E8"/>
+  <rect x="64" y="64" width="1472" height="772" rx="28" fill="#FFFDF8" stroke="#1E2A38" stroke-width="4"/>
+  <text x="104" y="148" fill="#1E2A38" font-family="Georgia, Times New Roman, serif" font-size="56" font-weight="700">
+    The Agent Trust Boundary
+  </text>
+  <text x="104" y="196" fill="#5D6775" font-family="Arial, Helvetica, sans-serif" font-size="24">
+    Registration and authentication exist. Scoped authorization is the missing primitive.
+  </text>
+
+  <rect x="110" y="282" width="280" height="280" rx="26" fill="#E7EEF7" stroke="#1E2A38" stroke-width="3"/>
+  <text x="150" y="352" fill="#1E2A38" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="700">
+    Registration
+  </text>
+  <text x="150" y="406" fill="#304254" font-family="Arial, Helvetica, sans-serif" font-size="24">
+    Proves an agent exists
+  </text>
+  <text x="150" y="442" fill="#304254" font-family="Arial, Helvetica, sans-serif" font-size="24">
+    in a discoverable namespace.
+  </text>
+  <text x="150" y="510" fill="#5D6775" font-family="Arial, Helvetica, sans-serif" font-size="22">
+    Example:
+  </text>
+  <text x="150" y="546" fill="#5D6775" font-family="Arial, Helvetica, sans-serif" font-size="22">
+    ERC-8004 reference
+  </text>
+
+  <rect x="450" y="282" width="280" height="280" rx="26" fill="#E8F4EC" stroke="#1E2A38" stroke-width="3"/>
+  <text x="490" y="352" fill="#1E2A38" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="700">
+    Authentication
+  </text>
+  <text x="490" y="406" fill="#304254" font-family="Arial, Helvetica, sans-serif" font-size="24">
+    Proves key control
+  </text>
+  <text x="490" y="442" fill="#304254" font-family="Arial, Helvetica, sans-serif" font-size="24">
+    for a message or session.
+  </text>
+  <text x="490" y="510" fill="#5D6775" font-family="Arial, Helvetica, sans-serif" font-size="22">
+    Example:
+  </text>
+  <text x="490" y="546" fill="#5D6775" font-family="Arial, Helvetica, sans-serif" font-size="22">
+    EIP-712 signature
+  </text>
+
+  <rect x="790" y="240" width="320" height="364" rx="30" fill="#FFF2CC" stroke="#D98A00" stroke-width="6"/>
+  <text x="840" y="322" fill="#7B4A00" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700">
+    Authorization
+  </text>
+  <text x="840" y="378" fill="#7B4A00" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="700">
+    Missing Primitive
+  </text>
+  <text x="840" y="438" fill="#5A4630" font-family="Arial, Helvetica, sans-serif" font-size="24">
+    Proves this specific agent
+  </text>
+  <text x="840" y="474" fill="#5A4630" font-family="Arial, Helvetica, sans-serif" font-size="24">
+    is allowed to perform
+  </text>
+  <text x="840" y="510" fill="#5A4630" font-family="Arial, Helvetica, sans-serif" font-size="24">
+    this specific action
+  </text>
+  <text x="840" y="546" fill="#5A4630" font-family="Arial, Helvetica, sans-serif" font-size="24">
+    under a committed policy.
+  </text>
+  <text x="840" y="612" fill="#7B4A00" font-family="Arial, Helvetica, sans-serif" font-size="22">
+    Emtun: Scoped Authorization Proofs
+  </text>
+
+  <rect x="1170" y="282" width="280" height="280" rx="26" fill="#F7E9EA" stroke="#1E2A38" stroke-width="3"/>
+  <text x="1210" y="352" fill="#1E2A38" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="700">
+    Execution
+  </text>
+  <text x="1210" y="406" fill="#304254" font-family="Arial, Helvetica, sans-serif" font-size="24">
+    Proves the work
+  </text>
+  <text x="1210" y="442" fill="#304254" font-family="Arial, Helvetica, sans-serif" font-size="24">
+    was done correctly.
+  </text>
+  <text x="1210" y="510" fill="#5D6775" font-family="Arial, Helvetica, sans-serif" font-size="22">
+    Out of scope for
+  </text>
+  <text x="1210" y="546" fill="#5D6775" font-family="Arial, Helvetica, sans-serif" font-size="22">
+    Emtun V1
+  </text>
+
+  <path d="M390 422H440" stroke="#1E2A38" stroke-width="6" stroke-linecap="round"/>
+  <path d="M730 422H770" stroke="#1E2A38" stroke-width="6" stroke-linecap="round"/>
+  <path d="M1110 422H1160" stroke="#1E2A38" stroke-width="6" stroke-linecap="round"/>
+
+  <path d="M429 408L450 422L429 436" stroke="#1E2A38" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M759 408L780 422L759 436" stroke="#1E2A38" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M1149 408L1170 422L1149 436" stroke="#1E2A38" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <rect x="104" y="684" width="1392" height="102" rx="22" fill="#1E2A38"/>
+  <text x="144" y="744" fill="#FFFDF8" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="700">
+    Thesis:
+  </text>
+  <text x="264" y="744" fill="#FFFDF8" font-family="Arial, Helvetica, sans-serif" font-size="30">
+    Identity and signatures are not enough. Agent systems also need a way to prove scoped authorization.
+  </text>
+</svg>

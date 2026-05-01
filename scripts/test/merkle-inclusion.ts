@@ -1,17 +1,9 @@
-import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { Barretenberg, UltraHonkBackend, fieldToString } from '@aztec/bb.js';
+import { Barretenberg, UltraHonkBackend } from '@aztec/bb.js';
 import { Noir } from '@noir-lang/noir_js';
-import type { CompiledCircuit } from '@noir-lang/types';
-
-type PolicyLeaf = {
-  action_type: bigint;
-  scope: bigint;
-  expiry: bigint;
-  agent_salt: bigint;
-};
+import { computeMerkleRootFromPath, hashLeaf, hashPair, loadCompiledCircuit, type LeafPreimage } from './_shared.js';
 
 const TREE_DEPTH = 8;
 const LEAF_COUNT = 1 << TREE_DEPTH;
@@ -21,47 +13,13 @@ const __dirname = dirname(__filename);
 const projectRoot = resolve(__dirname, '..', '..');
 const artifactPath = resolve(projectRoot, 'circuit', 'target', 'circuit.json');
 
-const policyLeaves: PolicyLeaf[] = [
+const policyLeaves: LeafPreimage[] = [
   { action_type: 7n, scope: 42n, expiry: 1_725_312_000n, agent_salt: 998_877_665_544_332_211n },
   { action_type: 11n, scope: 512n, expiry: 1_825_398_400n, agent_salt: 1_234_567_890_123_456_789n },
   { action_type: 255n, scope: 65_537n, expiry: 4_102_444_800n, agent_salt: 340_282_366_920_938_463_463_374_607_431_768_211_283n },
   { action_type: 3n, scope: 9_999n, expiry: 1_901_234_567n, agent_salt: 7_777_777_777_777_777n },
   { action_type: 91n, scope: 1_024n, expiry: 2_222_222_222n, agent_salt: 888_999_000_111_222_333n },
 ];
-
-function toFieldBytes(value: bigint): Uint8Array {
-  if (value < 0n) {
-    throw new Error(`Field values must be non-negative. Received ${value.toString()}.`);
-  }
-
-  const hex = value.toString(16);
-  if (hex.length > 64) {
-    throw new Error(`Field value exceeds 32 bytes: ${value.toString()}`);
-  }
-
-  const padded = hex.padStart(64, '0');
-  const bytes = new Uint8Array(32);
-
-  for (let i = 0; i < 32; i += 1) {
-    const offset = i * 2;
-    bytes[i] = Number.parseInt(padded.slice(offset, offset + 2), 16);
-  }
-
-  return bytes;
-}
-
-async function hashFields(bb: Barretenberg, fields: bigint[]): Promise<bigint> {
-  const result = await bb.poseidon2Hash({ inputs: fields.map(toFieldBytes) });
-  return BigInt(fieldToString(result.hash));
-}
-
-async function hashLeaf(bb: Barretenberg, leaf: PolicyLeaf): Promise<bigint> {
-  return hashFields(bb, [leaf.action_type, leaf.scope, leaf.expiry, leaf.agent_salt]);
-}
-
-async function hashPair(bb: Barretenberg, left: bigint, right: bigint): Promise<bigint> {
-  return hashFields(bb, [left, right]);
-}
 
 async function buildTree(bb: Barretenberg, leaves: bigint[]): Promise<bigint[][]> {
   let currentLevel = leaves;
@@ -99,7 +57,7 @@ function getMerkleProof(levels: bigint[][], index: number): { path: bigint[]; in
 async function expectNegativeCase(
   noir: Noir,
   policyRoot: bigint,
-  rogueLeaf: PolicyLeaf,
+  rogueLeaf: LeafPreimage,
   rogueHash: bigint,
   path: bigint[],
   indices: number[],
@@ -124,7 +82,7 @@ async function expectNegativeCase(
 }
 
 async function main(): Promise<void> {
-  const compiledCircuit = JSON.parse(readFileSync(artifactPath, 'utf8')) as CompiledCircuit;
+  const compiledCircuit = loadCompiledCircuit(artifactPath);
   const noir = new Noir(compiledCircuit);
   const bb = await Barretenberg.new();
 
@@ -138,6 +96,11 @@ async function main(): Promise<void> {
     const targetLeaf = policyLeaves[targetIndex];
     const actionHash = leafHashes[targetIndex];
     const { path, indices } = getMerkleProof(levels, targetIndex);
+    const recomputedRoot = await computeMerkleRootFromPath(bb, actionHash, path, indices);
+
+    if (recomputedRoot !== policyRoot) {
+      throw new Error('TypeScript Merkle proof reconstruction did not match the computed policy root.');
+    }
 
     const { witness } = await noir.execute({
       policy_root: policyRoot.toString(),
@@ -162,7 +125,7 @@ async function main(): Promise<void> {
     console.log(`action_hash: ${actionHash.toString()}`);
     console.log('MERKLE INCLUSION CONFIRMED');
 
-    const rogueLeaf: PolicyLeaf = {
+    const rogueLeaf: LeafPreimage = {
       action_type: 404n,
       scope: 8080n,
       expiry: 3_333_333_333n,

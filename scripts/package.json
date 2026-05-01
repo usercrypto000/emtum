@@ -3,6 +3,8 @@
   "version": "1.0.0",
   "description": "TypeScript tooling for Emtun proof and alignment scripts",
   "scripts": {
+    "validate": "npm run typecheck && npm run poseidon-align && npm run merkle-inclusion",
+    "merkle-inclusion": "tsx test/merkle-inclusion.ts",
     "poseidon-align": "tsx test/poseidon-align.ts",
     "typecheck": "tsc --noEmit"
   },
