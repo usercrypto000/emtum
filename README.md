@@ -14,12 +14,12 @@ Emtun is a local simulation of Scoped Authorization Proofs (SAP), a ZK primitive
 - `npm run poseidon-align` replays Poseidon2 leaf-hash alignment against the current inclusion-circuit ABI and should log `POSEIDON ALIGNMENT CONFIRMED`.
 - `npm run merkle-inclusion` builds a depth-8 Poseidon2 Merkle tree, proves inclusion for one leaf, and checks a negative case. It should log `MERKLE INCLUSION CONFIRMED` and `NEGATIVE CASE CONFIRMED`.
 - `npm run generate:verifier` generates the EVM verifier and a reusable proof fixture for the current circuit.
-- `contracts/` contains the generated Honk verifier, a stable verifier adapter, a minimal policy root chain, and Foundry tests. Registry and marketplace contracts have not been implemented yet.
+- `contracts/` contains the generated Honk verifier, a stable verifier adapter, a minimal policy root chain, an authorization reader, and Foundry tests. Registry and marketplace contracts have not been implemented yet.
 
 ## Structure
 
 - `circuit/`: Noir inclusion circuit, local Poseidon2 Merkle helper, and compiled artifacts
-- `contracts/`: Foundry surface, generated verifier, verifier adapter, policy root chain, and verifier gas tests
+- `contracts/`: Foundry surface, generated verifier, verifier adapter, policy root chain, authorization reader, and verifier gas tests
 - `scripts/`: TypeScript proof tooling and rerunnable validation harnesses
 - `Research/`: architectural notes, drafts, and publication planning
 - `lib/` and `test/`: reserved for future shared modules and fixtures
@@ -67,10 +67,11 @@ Production design constraints already established in the repo:
 - deployable verifier baseline uses `optimizer_runs = 1`, measures one proof at 2,164,576 gas, and keeps runtime bytecode under the EIP-170 size ceiling
 - future contracts call the verifier adapter, not the generated Barretenberg verifier directly
 - `PolicyRootChain` stores historical roots for auditability, but only the current chain head passes authorization checks
+- `EmtunAuthorizationReader` composes the current root lookup with proof verification and rejects stale roots after rotation
 
 ## Immediate Next Milestones
 
 1. Keep the repo rerunnable and internally consistent with the draft.
 2. Resolve production leaf-schema direction before real registry work.
-3. Add a narrow authorization reader that combines `PolicyRootChain` with `EmtunVerifierAdapter`.
+3. Design the smallest registry boundary that can own agent identifiers without adding marketplace logic.
 4. Continue rewriting the research draft into publishable form while the implementation stays narrow and testable.
