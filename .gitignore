@@ -7,6 +7,8 @@ scripts/node_modules/
 
 target/
 circuit/target/
+contracts/cache/
+contracts/out/
 
 dist/
 build/

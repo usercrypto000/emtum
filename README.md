@@ -13,12 +13,13 @@ Emtun is a local simulation of Scoped Authorization Proofs (SAP), a ZK primitive
 
 - `npm run poseidon-align` replays Poseidon2 leaf-hash alignment against the current inclusion-circuit ABI and should log `POSEIDON ALIGNMENT CONFIRMED`.
 - `npm run merkle-inclusion` builds a depth-8 Poseidon2 Merkle tree, proves inclusion for one leaf, and checks a negative case. It should log `MERKLE INCLUSION CONFIRMED` and `NEGATIVE CASE CONFIRMED`.
-- `contracts/` is still scaffold-only Foundry surface. No protocol contracts have been implemented yet.
+- `npm run generate:verifier` generates the EVM verifier and a reusable proof fixture for the current circuit.
+- `contracts/` contains the generated Honk verifier and a Foundry gas harness. No protocol contracts have been implemented yet.
 
 ## Structure
 
 - `circuit/`: Noir inclusion circuit, local Poseidon2 Merkle helper, and compiled artifacts
-- `contracts/`: Foundry scaffold only
+- `contracts/`: Foundry surface, generated verifier, and verifier gas tests
 - `scripts/`: TypeScript proof tooling and rerunnable validation harnesses
 - `Research/`: architectural notes, drafts, and publication planning
 - `lib/` and `test/`: reserved for future shared modules and fixtures
@@ -31,6 +32,7 @@ From [scripts](C:/Users/HP/KnoxOS/projects/entum/scripts):
 npm run typecheck
 npm run poseidon-align
 npm run merkle-inclusion
+npm run generate:verifier
 npm run validate
 ```
 
@@ -39,6 +41,12 @@ From [circuit](C:/Users/HP/KnoxOS/projects/entum/circuit):
 ```bash
 nargo test
 nargo compile
+```
+
+From [contracts](C:/Users/HP/KnoxOS/projects/entum/contracts):
+
+```bash
+forge test -vvv
 ```
 
 ## Architectural Position
@@ -56,10 +64,11 @@ Production design constraints already established in the repo:
 - policy evolution should use a chain-head pattern
 - public inputs must stay minimal to support proof caching
 - Poseidon2 must remain consistent at leaf and internal-node levels
+- deployable verifier baseline uses `optimizer_runs = 1`, measures one proof at 2,164,576 gas, and keeps runtime bytecode under the EIP-170 size ceiling
 
 ## Immediate Next Milestones
 
 1. Keep the repo rerunnable and internally consistent with the draft.
-2. Generate and benchmark the verifier contract gas cost.
-3. Resolve production leaf-schema direction before real registry work.
+2. Resolve production leaf-schema direction before real registry work.
+3. Design the minimal verifier adapter boundary before marketplace contracts.
 4. Continue rewriting the research draft into publishable form while the implementation stays narrow and testable.
