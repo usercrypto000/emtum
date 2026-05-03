@@ -14,12 +14,13 @@ Emtun is a local simulation of Scoped Authorization Proofs (SAP), a ZK primitive
 - `npm run poseidon-align` replays Poseidon2 leaf-hash alignment against the current inclusion-circuit ABI and should log `POSEIDON ALIGNMENT CONFIRMED`.
 - `npm run merkle-inclusion` builds a depth-8 Poseidon2 Merkle tree, proves inclusion for one leaf, and checks a negative case. It should log `MERKLE INCLUSION CONFIRMED` and `NEGATIVE CASE CONFIRMED`.
 - `npm run generate:verifier` generates the EVM verifier and a reusable proof fixture for the current circuit.
-- `contracts/` contains the generated Honk verifier, a stable verifier adapter, a minimal policy root chain, an agent registry boundary, an EAS-facing attestation mock, an authorization reader, and Foundry tests. Marketplace contracts have not been implemented yet.
+- `npm run export:verifier-call` exports an auditable verifier-call fixture from the generated proof.
+- `contracts/` contains the generated Honk verifier, verifier adapter, policy root chain, agent registry boundary, EAS-facing attestation mock, authorization reader, task authorization gate, deployment script, and Foundry tests. Marketplace contracts have not been implemented yet.
 
 ## Structure
 
 - `circuit/`: Noir inclusion circuit, local Poseidon2 Merkle helper, and compiled artifacts
-- `contracts/`: Foundry surface, generated verifier, verifier adapter, policy root chain, agent registry boundary, EAS-facing attestation mock, authorization reader, and verifier gas tests
+- `contracts/`: Foundry surface, generated verifier, verifier adapter, policy root chain, agent registry boundary, EAS-facing attestation mock, authorization reader, task authorization gate, deployment script, and verifier gas tests
 - `scripts/`: TypeScript proof tooling and rerunnable validation harnesses
 - `Research/`: architectural notes, drafts, and publication planning
 - `lib/` and `test/`: reserved for future shared modules and fixtures
@@ -33,6 +34,7 @@ npm run typecheck
 npm run poseidon-align
 npm run merkle-inclusion
 npm run generate:verifier
+npm run export:verifier-call
 npm run validate
 ```
 
@@ -47,6 +49,7 @@ From [contracts](C:/Users/HP/KnoxOS/projects/entum/contracts):
 
 ```bash
 forge test -vvv
+forge script script/DeploySimulation.s.sol:DeploySimulation
 ```
 
 ## Architectural Position
@@ -70,10 +73,11 @@ Production design constraints already established in the repo:
 - `AgentRegistry` owns `agentId` existence, then delegates policy updates to `PolicyRootChain`
 - `EmtunEASAttestationBoundary` attests to the registry and chain-head mechanism, not to a single policy root value
 - `EmtunAuthorizationReader` composes the current root lookup with proof verification and rejects stale roots after rotation
+- `TaskAuthorizationGate` combines registration, active identity attestation, and SAP proof validity without adding marketplace execution semantics
 
 ## Immediate Next Milestones
 
 1. Keep the repo rerunnable and internally consistent with the draft.
 2. Resolve production leaf-schema direction before real registry work.
-3. Add a thin task authorization gate only after the identity, chain-head, and proof boundaries remain stable.
+3. Decide whether owner transfer should automatically invalidate or refresh identity attestations before marketplace work.
 4. Continue rewriting the research draft into publishable form while the implementation stays narrow and testable.
