@@ -14,12 +14,12 @@ Emtun is a local simulation of Scoped Authorization Proofs (SAP), a ZK primitive
 - `npm run poseidon-align` replays Poseidon2 leaf-hash alignment against the current inclusion-circuit ABI and should log `POSEIDON ALIGNMENT CONFIRMED`.
 - `npm run merkle-inclusion` builds a depth-8 Poseidon2 Merkle tree, proves inclusion for one leaf, and checks a negative case. It should log `MERKLE INCLUSION CONFIRMED` and `NEGATIVE CASE CONFIRMED`.
 - `npm run generate:verifier` generates the EVM verifier and a reusable proof fixture for the current circuit.
-- `contracts/` contains the generated Honk verifier and a Foundry gas harness. No protocol contracts have been implemented yet.
+- `contracts/` contains the generated Honk verifier, a stable verifier adapter, and Foundry tests. Registry and marketplace contracts have not been implemented yet.
 
 ## Structure
 
 - `circuit/`: Noir inclusion circuit, local Poseidon2 Merkle helper, and compiled artifacts
-- `contracts/`: Foundry surface, generated verifier, and verifier gas tests
+- `contracts/`: Foundry surface, generated verifier, verifier adapter, and verifier gas tests
 - `scripts/`: TypeScript proof tooling and rerunnable validation harnesses
 - `Research/`: architectural notes, drafts, and publication planning
 - `lib/` and `test/`: reserved for future shared modules and fixtures
@@ -65,10 +65,11 @@ Production design constraints already established in the repo:
 - public inputs must stay minimal to support proof caching
 - Poseidon2 must remain consistent at leaf and internal-node levels
 - deployable verifier baseline uses `optimizer_runs = 1`, measures one proof at 2,164,576 gas, and keeps runtime bytecode under the EIP-170 size ceiling
+- future contracts call the verifier adapter, not the generated Barretenberg verifier directly
 
 ## Immediate Next Milestones
 
 1. Keep the repo rerunnable and internally consistent with the draft.
 2. Resolve production leaf-schema direction before real registry work.
-3. Design the minimal verifier adapter boundary before marketplace contracts.
+3. Implement a minimal policy root store that reads like the future chain-head design without adding marketplace logic.
 4. Continue rewriting the research draft into publishable form while the implementation stays narrow and testable.
