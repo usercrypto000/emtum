@@ -1,0 +1,4 @@
+# EAS Attestation Boundary
+*May 2026*
+
+The EAS-facing mock stores identity attestations that point to `AgentRegistry` and `PolicyRootChain`, not to a specific policy root value. This preserves the production separation between identity issuance and policy evolution: root rotation updates the chain head, while the identity attestation remains valid because it commits to the chain-head mechanism rather than one root snapshot. `MockEAS` is deliberately local and minimal; it exists to validate Emtun's trust boundary before integrating real EAS contracts.

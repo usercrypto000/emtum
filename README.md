@@ -14,12 +14,12 @@ Emtun is a local simulation of Scoped Authorization Proofs (SAP), a ZK primitive
 - `npm run poseidon-align` replays Poseidon2 leaf-hash alignment against the current inclusion-circuit ABI and should log `POSEIDON ALIGNMENT CONFIRMED`.
 - `npm run merkle-inclusion` builds a depth-8 Poseidon2 Merkle tree, proves inclusion for one leaf, and checks a negative case. It should log `MERKLE INCLUSION CONFIRMED` and `NEGATIVE CASE CONFIRMED`.
 - `npm run generate:verifier` generates the EVM verifier and a reusable proof fixture for the current circuit.
-- `contracts/` contains the generated Honk verifier, a stable verifier adapter, a minimal policy root chain, an agent registry boundary, an authorization reader, and Foundry tests. Marketplace contracts have not been implemented yet.
+- `contracts/` contains the generated Honk verifier, a stable verifier adapter, a minimal policy root chain, an agent registry boundary, an EAS-facing attestation mock, an authorization reader, and Foundry tests. Marketplace contracts have not been implemented yet.
 
 ## Structure
 
 - `circuit/`: Noir inclusion circuit, local Poseidon2 Merkle helper, and compiled artifacts
-- `contracts/`: Foundry surface, generated verifier, verifier adapter, policy root chain, agent registry boundary, authorization reader, and verifier gas tests
+- `contracts/`: Foundry surface, generated verifier, verifier adapter, policy root chain, agent registry boundary, EAS-facing attestation mock, authorization reader, and verifier gas tests
 - `scripts/`: TypeScript proof tooling and rerunnable validation harnesses
 - `Research/`: architectural notes, drafts, and publication planning
 - `lib/` and `test/`: reserved for future shared modules and fixtures
@@ -68,11 +68,12 @@ Production design constraints already established in the repo:
 - future contracts call the verifier adapter, not the generated Barretenberg verifier directly
 - `PolicyRootChain` stores historical roots for auditability, but only the current chain head passes authorization checks
 - `AgentRegistry` owns `agentId` existence, then delegates policy updates to `PolicyRootChain`
+- `EmtunEASAttestationBoundary` attests to the registry and chain-head mechanism, not to a single policy root value
 - `EmtunAuthorizationReader` composes the current root lookup with proof verification and rejects stale roots after rotation
 
 ## Immediate Next Milestones
 
 1. Keep the repo rerunnable and internally consistent with the draft.
 2. Resolve production leaf-schema direction before real registry work.
-3. Add an EAS-facing attestation boundary mock only after the registry and chain-head invariants stay stable.
+3. Add a thin task authorization gate only after the identity, chain-head, and proof boundaries remain stable.
 4. Continue rewriting the research draft into publishable form while the implementation stays narrow and testable.
