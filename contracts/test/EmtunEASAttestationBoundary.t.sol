@@ -18,6 +18,7 @@ contract EmtunEASAttestationBoundaryTest is Test {
     bytes32 internal constant NEXT_ROOT = keccak256("policy.root.next");
 
     address internal owner = address(0xA11CE);
+    address internal nextOwner = address(0xB0B);
     address internal attacker = address(0xBAD);
 
     function setUp() public {
@@ -41,6 +42,7 @@ contract EmtunEASAttestationBoundaryTest is Test {
         assertTrue(eas.isAttestationActive(uid));
         assertTrue(boundary.hasActiveAgentAttestation(AGENT_ID));
         assertEq(boundary.activeAttestationUid(AGENT_ID), uid);
+        assertEq(boundary.attestedOwner(AGENT_ID), owner);
         assertEq(attestation.schema, boundary.AGENT_IDENTITY_SCHEMA());
         assertEq(attestation.recipient, owner);
         assertEq(attestation.attester, address(boundary));
@@ -77,7 +79,9 @@ contract EmtunEASAttestationBoundaryTest is Test {
     function test_RevertsWhenAttestationAlreadyActive() public {
         vm.startPrank(owner);
         bytes32 uid = boundary.attestAgent(AGENT_ID);
-        vm.expectRevert(abi.encodeWithSelector(EmtunEASAttestationBoundary.AttestationAlreadyActive.selector, AGENT_ID, uid));
+        vm.expectRevert(
+            abi.encodeWithSelector(EmtunEASAttestationBoundary.AttestationAlreadyActive.selector, AGENT_ID, uid)
+        );
         boundary.attestAgent(AGENT_ID);
         vm.stopPrank();
     }
@@ -91,6 +95,7 @@ contract EmtunEASAttestationBoundaryTest is Test {
         assertFalse(eas.isAttestationActive(uid));
         assertFalse(boundary.hasActiveAgentAttestation(AGENT_ID));
         assertEq(boundary.activeAttestationUid(AGENT_ID), bytes32(0));
+        assertEq(boundary.attestedOwner(AGENT_ID), address(0));
     }
 
     function test_CanReattestAfterRevocation() public {
@@ -103,6 +108,44 @@ contract EmtunEASAttestationBoundaryTest is Test {
         assertFalse(eas.isAttestationActive(firstUid));
         assertTrue(eas.isAttestationActive(secondUid));
         assertEq(boundary.activeAttestationUid(AGENT_ID), secondUid);
+        assertEq(boundary.attestedOwner(AGENT_ID), owner);
+    }
+
+    function test_OwnerTransferInvalidatesActiveAttestationUntilNewOwnerAttests() public {
+        vm.prank(owner);
+        bytes32 oldUid = boundary.attestAgent(AGENT_ID);
+
+        vm.prank(owner);
+        registry.transferAgentOwner(AGENT_ID, nextOwner);
+
+        assertTrue(eas.isAttestationActive(oldUid));
+        assertFalse(boundary.hasActiveAgentAttestation(AGENT_ID));
+        assertEq(boundary.activeAttestationUid(AGENT_ID), oldUid);
+        assertEq(boundary.attestedOwner(AGENT_ID), owner);
+
+        vm.prank(nextOwner);
+        bytes32 newUid = boundary.attestAgent(AGENT_ID);
+
+        assertTrue(eas.isAttestationActive(newUid));
+        assertTrue(boundary.hasActiveAgentAttestation(AGENT_ID));
+        assertEq(boundary.activeAttestationUid(AGENT_ID), newUid);
+        assertEq(boundary.attestedOwner(AGENT_ID), nextOwner);
+    }
+
+    function test_NewOwnerCanRevokeStaleAttestationAfterTransfer() public {
+        vm.prank(owner);
+        bytes32 uid = boundary.attestAgent(AGENT_ID);
+
+        vm.prank(owner);
+        registry.transferAgentOwner(AGENT_ID, nextOwner);
+
+        vm.prank(nextOwner);
+        boundary.revokeAgentAttestation(AGENT_ID);
+
+        assertFalse(eas.isAttestationActive(uid));
+        assertFalse(boundary.hasActiveAgentAttestation(AGENT_ID));
+        assertEq(boundary.activeAttestationUid(AGENT_ID), bytes32(0));
+        assertEq(boundary.attestedOwner(AGENT_ID), address(0));
     }
 
     function test_OnlyAgentOwnerCanRevoke() public {

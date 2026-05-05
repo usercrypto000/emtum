@@ -25,6 +25,7 @@ contract TaskAuthorizationGateTest is Test {
     bytes32 internal constant NEXT_ROOT = keccak256("policy.root.next");
 
     address internal owner = address(0xA11CE);
+    address internal nextOwner = address(0xB0B);
 
     function setUp() public {
         rootChain = new PolicyRootChain();
@@ -82,6 +83,20 @@ contract TaskAuthorizationGateTest is Test {
         rootChain.updateRoot(AGENT_ID, NEXT_ROOT);
 
         assertFalse(gate.isTaskAuthorized(AGENT_ID, proof, actionHash));
+    }
+
+    function test_RejectsTransferredOwnerUntilNewOwnerReattests() public {
+        (bytes memory proof, bytes32 actionHash) = _registerAndAttestAgent();
+
+        vm.prank(owner);
+        registry.transferAgentOwner(AGENT_ID, nextOwner);
+
+        assertFalse(gate.isTaskAuthorized(AGENT_ID, proof, actionHash));
+
+        vm.prank(nextOwner);
+        boundary.attestAgent(AGENT_ID);
+
+        assertTrue(gate.isTaskAuthorized(AGENT_ID, proof, actionHash));
     }
 
     function test_RevertsWhenAgentRegistryIsNotContract() public {

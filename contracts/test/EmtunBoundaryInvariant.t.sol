@@ -13,6 +13,7 @@ contract EmtunBoundaryHandler is Test {
         address owner;
         bytes32 activeUid;
         bytes32 revokedUid;
+        address attestedOwner;
     }
 
     AgentRegistry public immutable registry;
@@ -98,7 +99,16 @@ contract EmtunBoundaryHandler is Test {
             return;
         }
 
-        if (model.activeUid != bytes32(0) && eas.isAttestationActive(model.activeUid)) {
+        if (actor != model.owner) {
+            vm.expectRevert(abi.encodeWithSelector(EmtunEASAttestationBoundary.NotAgentOwner.selector, agentId, actor));
+            boundary.attestAgent(agentId);
+            return;
+        }
+
+        if (
+            model.activeUid != bytes32(0) && eas.isAttestationActive(model.activeUid)
+                && model.attestedOwner == model.owner
+        ) {
             vm.expectRevert(
                 abi.encodeWithSelector(
                     EmtunEASAttestationBoundary.AttestationAlreadyActive.selector, agentId, model.activeUid
@@ -108,18 +118,14 @@ contract EmtunBoundaryHandler is Test {
             return;
         }
 
-        if (actor != model.owner) {
-            vm.expectRevert(abi.encodeWithSelector(EmtunEASAttestationBoundary.NotAgentOwner.selector, agentId, actor));
-            boundary.attestAgent(agentId);
-            return;
-        }
-
         bytes32 uid = boundary.attestAgent(agentId);
 
         model.activeUid = uid;
+        model.attestedOwner = actor;
         assertTrue(eas.isAttestationActive(uid));
         assertTrue(boundary.hasActiveAgentAttestation(agentId));
         assertEq(boundary.activeAttestationUid(agentId), uid);
+        assertEq(boundary.attestedOwner(agentId), actor);
     }
 
     function revokeAgentAttestation(uint8 agentSeed, uint8 actorSeed) external {
@@ -147,10 +153,12 @@ contract EmtunBoundaryHandler is Test {
 
         model.activeUid = bytes32(0);
         model.revokedUid = uidToRevoke;
+        model.attestedOwner = address(0);
 
         assertFalse(eas.isAttestationActive(uidToRevoke));
         assertFalse(boundary.hasActiveAgentAttestation(agentId));
         assertEq(boundary.activeAttestationUid(agentId), bytes32(0));
+        assertEq(boundary.attestedOwner(agentId), address(0));
     }
 
     function agentCount() external pure returns (uint256) {
@@ -167,6 +175,10 @@ contract EmtunBoundaryHandler is Test {
 
     function activeUid(bytes32 agentId) external view returns (bytes32) {
         return models[agentId].activeUid;
+    }
+
+    function expectedAttestedOwner(bytes32 agentId) external view returns (address) {
+        return models[agentId].attestedOwner;
     }
 
     function revokedUid(bytes32 agentId) external view returns (bytes32) {
@@ -217,9 +229,15 @@ contract EmtunBoundaryInvariantTest is Test {
         for (uint256 i = 0; i < count; i++) {
             bytes32 agentId = handler.agentIds(i);
             bytes32 uid = handler.activeUid(agentId);
+            address attestedOwner = handler.expectedAttestedOwner(agentId);
+            address currentOwner = handler.isRegistered(agentId) ? registry.ownerOf(agentId) : address(0);
 
             assertEq(boundary.activeAttestationUid(agentId), uid);
-            assertEq(boundary.hasActiveAgentAttestation(agentId), uid != bytes32(0) && eas.isAttestationActive(uid));
+            assertEq(boundary.attestedOwner(agentId), attestedOwner);
+            assertEq(
+                boundary.hasActiveAgentAttestation(agentId),
+                uid != bytes32(0) && eas.isAttestationActive(uid) && attestedOwner == currentOwner
+            );
         }
     }
 
@@ -253,9 +271,12 @@ contract EmtunBoundaryInvariantTest is Test {
             MockEAS.Attestation memory attestation = eas.getAttestation(uid);
             (bytes32 attestedAgentId, address attestedRegistry, address attestedRootChain) =
                 abi.decode(attestation.data, (bytes32, address, address));
+            address attestedOwner = handler.expectedAttestedOwner(agentId);
 
             assertTrue(handler.isRegistered(agentId));
             assertEq(registry.ownerOf(agentId), handler.expectedOwner(agentId));
+            assertEq(boundary.attestedOwner(agentId), attestedOwner);
+            assertEq(attestation.recipient, attestedOwner);
             assertEq(attestation.schema, boundary.AGENT_IDENTITY_SCHEMA());
             assertEq(attestation.attester, address(boundary));
             assertEq(attestedAgentId, agentId);

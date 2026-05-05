@@ -27,6 +27,7 @@ contract EmtunEASAttestationBoundary {
     IMockEAS public immutable eas;
 
     mapping(bytes32 agentId => bytes32 uid) public activeAttestationUid;
+    mapping(bytes32 agentId => address owner) public attestedOwner;
 
     constructor(address agentRegistry_, address eas_) {
         if (agentRegistry_.code.length == 0) {
@@ -46,16 +47,16 @@ contract EmtunEASAttestationBoundary {
             revert InvalidAgentId();
         }
 
-        bytes32 existingUid = activeAttestationUid[agentId];
-
-        if (existingUid != bytes32(0) && eas.isAttestationActive(existingUid)) {
-            revert AttestationAlreadyActive(agentId, existingUid);
-        }
-
         address owner = agentRegistry.ownerOf(agentId);
 
         if (msg.sender != owner) {
             revert NotAgentOwner(agentId, msg.sender);
+        }
+
+        bytes32 existingUid = activeAttestationUid[agentId];
+
+        if (existingUid != bytes32(0) && eas.isAttestationActive(existingUid) && attestedOwner[agentId] == owner) {
+            revert AttestationAlreadyActive(agentId, existingUid);
         }
 
         address policyRootChain = agentRegistry.policyRootChain();
@@ -63,6 +64,7 @@ contract EmtunEASAttestationBoundary {
 
         uid = eas.attest(AGENT_IDENTITY_SCHEMA, owner, data);
         activeAttestationUid[agentId] = uid;
+        attestedOwner[agentId] = owner;
 
         emit AgentIdentityAttested(agentId, owner, uid, address(agentRegistry), policyRootChain);
     }
@@ -82,6 +84,7 @@ contract EmtunEASAttestationBoundary {
 
         eas.revoke(uid);
         activeAttestationUid[agentId] = bytes32(0);
+        attestedOwner[agentId] = address(0);
 
         emit AgentIdentityRevoked(agentId, owner, uid);
     }
@@ -89,6 +92,8 @@ contract EmtunEASAttestationBoundary {
     function hasActiveAgentAttestation(bytes32 agentId) external view returns (bool) {
         bytes32 uid = activeAttestationUid[agentId];
 
-        return uid != bytes32(0) && eas.isAttestationActive(uid);
+        return
+            uid != bytes32(0) && eas.isAttestationActive(uid)
+                && attestedOwner[agentId] == agentRegistry.ownerOf(agentId);
     }
 }

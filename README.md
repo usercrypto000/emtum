@@ -71,7 +71,7 @@ Production design constraints already established in the repo:
 - future contracts call the verifier adapter, not the generated Barretenberg verifier directly
 - `PolicyRootChain` stores historical roots for auditability, but only the current chain head passes authorization checks
 - `AgentRegistry` owns `agentId` existence, then delegates policy updates to `PolicyRootChain`
-- `EmtunEASAttestationBoundary` attests to the registry and chain-head mechanism, not to a single policy root value
+- `EmtunEASAttestationBoundary` attests to the registry and chain-head mechanism, not to a single policy root value, and treats owner transfer as an attestation invalidation boundary until the new owner re-attests
 - `EmtunAuthorizationReader` composes the current root lookup with proof verification and rejects stale roots after rotation
 - `TaskAuthorizationGate` combines registration, active identity attestation, and SAP proof validity without adding marketplace execution semantics
 
@@ -79,5 +79,4 @@ Production design constraints already established in the repo:
 
 1. Keep the repo rerunnable and internally consistent with the draft.
 2. Resolve production leaf-schema direction before real registry work.
-3. Decide whether owner transfer should automatically invalidate or refresh identity attestations before marketplace work.
-4. Continue rewriting the research draft into publishable form while the implementation stays narrow and testable.
+3. Continue rewriting the research draft into publishable form while the implementation stays narrow and testable.
