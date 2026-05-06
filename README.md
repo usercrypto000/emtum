@@ -25,6 +25,10 @@ Emtun is a local simulation of Scoped Authorization Proofs (SAP), a ZK primitive
 - `Research/`: architectural notes, drafts, and publication planning
 - `lib/` and `test/`: reserved for future shared modules and fixtures
 
+## Build Tracker
+
+The public build ledger lives at [Research/Notes/build-tracker.md](C:/Users/HP/KnoxOS/projects/entum/Research/Notes/build-tracker.md). Each shipped build records the commit, proof claim, and screenshot command.
+
 ## Key Commands
 
 From [scripts](C:/Users/HP/KnoxOS/projects/entum/scripts):
