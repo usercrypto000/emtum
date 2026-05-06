@@ -9,6 +9,7 @@ import {EmtunVerifierAdapter} from "../src/EmtunVerifierAdapter.sol";
 import {MockEAS} from "../src/MockEAS.sol";
 import {PolicyRootChain} from "../src/PolicyRootChain.sol";
 import {TaskAuthorizationGate} from "../src/TaskAuthorizationGate.sol";
+import {TaskIntentMarket} from "../src/TaskIntentMarket.sol";
 import {HonkVerifier} from "../src/verifiers/EmtunPolicyVerifier.sol";
 import {MerkleInclusionFixture} from "./fixtures/MerkleInclusionFixture.sol";
 
@@ -18,11 +19,14 @@ contract EmtunSimulationSmokeTest is Test {
     MockEAS internal eas;
     PolicyRootChain internal rootChain;
     TaskAuthorizationGate internal gate;
+    TaskIntentMarket internal market;
 
     bytes32 internal constant AGENT_ID = keccak256("emtun.agent.alpha");
+    bytes32 internal constant TASK_DATA_HASH = keccak256("task.intent.payload");
     bytes32 internal constant NEXT_ROOT = keccak256("policy.root.next");
 
     address internal owner = address(0xA11CE);
+    address internal requester = address(0xCAFE);
     address internal nextOwner = address(0xB0B);
 
     function setUp() public {
@@ -35,6 +39,7 @@ contract EmtunSimulationSmokeTest is Test {
         eas = new MockEAS();
         boundary = new EmtunEASAttestationBoundary(address(registry), address(eas));
         gate = new TaskAuthorizationGate(address(registry), address(boundary), address(reader));
+        market = new TaskIntentMarket(address(registry), address(gate));
     }
 
     function test_FullAuthorizationLifecycleSmoke() public {
@@ -56,6 +61,13 @@ contract EmtunSimulationSmokeTest is Test {
 
         assertTrue(gate.isTaskAuthorized(AGENT_ID, proof, actionHash));
         emit log("CURRENT ROOT AUTHORIZATION CONFIRMED");
+
+        vm.prank(requester);
+        uint256 taskId = market.openTaskIntent(actionHash, TASK_DATA_HASH);
+        vm.prank(owner);
+        market.claimTaskIntent(taskId, AGENT_ID, proof);
+        emit log_named_uint("task_intent_id", taskId);
+        emit log("TASK INTENT CLAIM CONFIRMED");
 
         vm.prank(owner);
         rootChain.updateRoot(AGENT_ID, NEXT_ROOT);
