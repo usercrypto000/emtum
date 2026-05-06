@@ -17,7 +17,7 @@ This tracker records the public simulation builds for Emtun. Each build must pre
 | 10. Owner transfer attestation invalidation | `0208f42` | Shipped | EAS boundary binds active attestation to current registry owner | Owner transfer invalidates usable identity attestation until the new owner re-attests | `cd contracts; forge test --match-path test/EmtunEASAttestationBoundary.t.sol -vvv` |
 | 11. Full authorization lifecycle smoke | `e26de0f` | Shipped | Single smoke test logging the full lifecycle | Register, attest, authorize, reject stale root, invalidate on transfer, and re-attest all work in one auditable path | `cd contracts; forge test --match-path test/EmtunSimulationSmoke.t.sol -vvv` |
 | 12. Task intent market | `6629094` | Shipped | Requester task intents and owner-gated agent claims through SAP authorization | A task can be assigned only when the current agent owner submits the claim and SAP authorization verifies | `cd contracts; forge test --match-path test/EmtunSimulationSmoke.t.sol -vvv` |
-| 13. Build tracker | `pending` | In progress | Public tracker for shipped builds, proof claims, and screenshot commands | The project now has a canonical development ledger before escrow or execution work begins | `cd contracts; forge test --match-path test/EmtunSimulationSmoke.t.sol -vvv` |
+| 13. Build tracker | `5b39f7a` | Shipped | Public tracker for shipped builds, proof claims, and screenshot commands | The project now has a canonical development ledger before escrow or execution work begins | `cd contracts; forge test --match-path test/EmtunSimulationSmoke.t.sol -vvv` |
 
 ## Open Build Queue
 
