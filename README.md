@@ -54,6 +54,7 @@ From [contracts](C:/Users/HP/KnoxOS/projects/entum/contracts):
 ```bash
 forge test -vvv
 forge test --match-path test/EmtunSimulationSmoke.t.sol -vvv
+forge test --match-path test/TaskIntentMarketStatefulFuzz.t.sol -vvv
 forge script script/DeploySimulation.s.sol:DeploySimulation
 ```
 
