@@ -11,6 +11,7 @@ import {PolicyRootChain} from "../src/PolicyRootChain.sol";
 import {TaskAuthorizationGate} from "../src/TaskAuthorizationGate.sol";
 import {TaskFundingEscrow} from "../src/TaskFundingEscrow.sol";
 import {TaskIntentMarket} from "../src/TaskIntentMarket.sol";
+import {TaskResultRegistry} from "../src/TaskResultRegistry.sol";
 import {HonkVerifier} from "../src/verifiers/EmtunPolicyVerifier.sol";
 import {MerkleInclusionFixture} from "./fixtures/MerkleInclusionFixture.sol";
 
@@ -22,9 +23,11 @@ contract EmtunSimulationSmokeTest is Test {
     TaskAuthorizationGate internal gate;
     TaskIntentMarket internal market;
     TaskFundingEscrow internal escrow;
+    TaskResultRegistry internal resultRegistry;
 
     bytes32 internal constant AGENT_ID = keccak256("emtun.agent.alpha");
     bytes32 internal constant TASK_DATA_HASH = keccak256("task.intent.payload");
+    bytes32 internal constant RESULT_HASH = keccak256("task.result.payload");
     uint256 internal constant FUNDING_AMOUNT = 1 ether;
     bytes32 internal constant NEXT_ROOT = keccak256("policy.root.next");
 
@@ -44,6 +47,7 @@ contract EmtunSimulationSmokeTest is Test {
         gate = new TaskAuthorizationGate(address(registry), address(boundary), address(reader));
         market = new TaskIntentMarket(address(registry), address(gate));
         escrow = new TaskFundingEscrow(address(market));
+        resultRegistry = new TaskResultRegistry(address(registry), address(market));
     }
 
     function test_FullAuthorizationLifecycleSmoke() public {
@@ -77,6 +81,11 @@ contract EmtunSimulationSmokeTest is Test {
         market.claimTaskIntent(taskId, AGENT_ID, proof);
         emit log_named_uint("task_intent_id", taskId);
         emit log("TASK INTENT CLAIM CONFIRMED");
+
+        vm.prank(owner);
+        resultRegistry.commitTaskResult(taskId, RESULT_HASH);
+        emit log_named_bytes32("result_hash", RESULT_HASH);
+        emit log("TASK RESULT COMMITMENT CONFIRMED");
 
         vm.prank(owner);
         rootChain.updateRoot(AGENT_ID, NEXT_ROOT);

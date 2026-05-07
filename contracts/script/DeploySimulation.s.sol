@@ -11,6 +11,7 @@ import {PolicyRootChain} from "../src/PolicyRootChain.sol";
 import {TaskAuthorizationGate} from "../src/TaskAuthorizationGate.sol";
 import {TaskFundingEscrow} from "../src/TaskFundingEscrow.sol";
 import {TaskIntentMarket} from "../src/TaskIntentMarket.sol";
+import {TaskResultRegistry} from "../src/TaskResultRegistry.sol";
 import {HonkVerifier} from "../src/verifiers/EmtunPolicyVerifier.sol";
 
 contract DeploySimulation is Script {
@@ -25,6 +26,7 @@ contract DeploySimulation is Script {
         TaskAuthorizationGate taskAuthorizationGate;
         TaskIntentMarket taskIntentMarket;
         TaskFundingEscrow taskFundingEscrow;
+        TaskResultRegistry taskResultRegistry;
     }
 
     function run() external returns (Deployment memory deployment) {
@@ -47,6 +49,8 @@ contract DeploySimulation is Script {
         deployment.taskIntentMarket =
             new TaskIntentMarket(address(deployment.agentRegistry), address(deployment.taskAuthorizationGate));
         deployment.taskFundingEscrow = new TaskFundingEscrow(address(deployment.taskIntentMarket));
+        deployment.taskResultRegistry =
+            new TaskResultRegistry(address(deployment.agentRegistry), address(deployment.taskIntentMarket));
 
         vm.stopBroadcast();
     }
