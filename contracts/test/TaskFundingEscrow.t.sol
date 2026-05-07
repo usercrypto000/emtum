@@ -43,6 +43,42 @@ contract RejectingEscrowPayer {
     }
 }
 
+contract RejectingAgentOwner {
+    AgentRegistry internal immutable registry;
+    EmtunEASAttestationBoundary internal immutable boundary;
+    TaskIntentMarket internal immutable market;
+    TaskResultRegistry internal immutable resultRegistry;
+
+    constructor(
+        AgentRegistry registry_,
+        EmtunEASAttestationBoundary boundary_,
+        TaskIntentMarket market_,
+        TaskResultRegistry resultRegistry_
+    ) {
+        registry = registry_;
+        boundary = boundary_;
+        market = market_;
+        resultRegistry = resultRegistry_;
+    }
+
+    receive() external payable {
+        revert("reject payout");
+    }
+
+    function registerAndAttest(bytes32 agentId, bytes32 policyRoot) external {
+        registry.registerAgent(agentId, policyRoot);
+        boundary.attestAgent(agentId);
+    }
+
+    function claimTaskIntent(uint256 taskId, bytes32 agentId, bytes calldata proof) external {
+        market.claimTaskIntent(taskId, agentId, proof);
+    }
+
+    function commitTaskResult(uint256 taskId, bytes32 resultHash) external {
+        resultRegistry.commitTaskResult(taskId, resultHash);
+    }
+}
+
 contract TaskFundingEscrowTest is Test {
     AgentRegistry internal registry;
     EmtunEASAttestationBoundary internal boundary;
@@ -270,6 +306,37 @@ contract TaskFundingEscrowTest is Test {
 
         vm.expectRevert(abi.encodeWithSelector(TaskFundingEscrow.EscrowNotFunded.selector, taskId));
         escrow.releaseAcceptedTaskIntent(taskId);
+    }
+
+    function test_RevertsWhenPayoutRecipientRejectsEth() public {
+        RejectingAgentOwner rejectingOwner = new RejectingAgentOwner(registry, boundary, market, resultRegistry);
+        bytes memory proof = MerkleInclusionFixture.proof();
+        bytes32[] memory publicInputs = MerkleInclusionFixture.publicInputs();
+        bytes32 policyRoot = publicInputs[0];
+        bytes32 actionHash = publicInputs[1];
+
+        rejectingOwner.registerAndAttest(AGENT_ID, policyRoot);
+
+        vm.prank(requester);
+        uint256 taskId = market.openTaskIntent(actionHash, TASK_DATA_HASH);
+        vm.prank(requester);
+        escrow.fundTaskIntent{value: FUNDING_AMOUNT}(taskId);
+        rejectingOwner.claimTaskIntent(taskId, AGENT_ID, proof);
+        rejectingOwner.commitTaskResult(taskId, RESULT_HASH);
+        vm.prank(requester);
+        acceptanceRegistry.acceptTaskResult(taskId, RESULT_HASH);
+
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                TaskFundingEscrow.PayoutFailed.selector, taskId, address(rejectingOwner), FUNDING_AMOUNT
+            )
+        );
+        escrow.releaseAcceptedTaskIntent(taskId);
+
+        TaskFundingEscrow.EscrowRecord memory record = escrow.getEscrowRecord(taskId);
+
+        assertEq(uint8(record.status), uint8(TaskFundingEscrow.EscrowStatus.Funded));
+        assertEq(address(escrow).balance, FUNDING_AMOUNT);
     }
 
     function test_RevertsWhenTaskIntentMarketIsNotContract() public {

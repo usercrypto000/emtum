@@ -58,10 +58,12 @@ forge test --match-path test/TaskFundingEscrow.t.sol -vvv
 forge test --match-path test/TaskResultRegistry.t.sol -vvv
 forge test --match-path test/TaskAcceptanceRegistry.t.sol -vvv
 forge test --match-path test/TaskLifecycleView.t.sol -vvv
+forge test --match-path test/DeploySimulation.t.sol -vvv
 forge test --match-path test/TaskIntentMarketStatefulFuzz.t.sol -vvv
 forge test --match-path test/TaskFundingEscrowStatefulFuzz.t.sol -vvv
 forge test --match-path test/TaskResultRegistryStatefulFuzz.t.sol -vvv
 forge test --match-path test/TaskAcceptanceRegistryStatefulFuzz.t.sol -vvv
+forge test --match-path test/TaskSettlementStatefulFuzz.t.sol -vvv
 forge script script/DeploySimulation.s.sol:DeploySimulation
 ```
 
@@ -91,7 +93,7 @@ Production design constraints already established in the repo:
 - `TaskFundingEscrow` lets requesters fund open task intents, recover funds after cancellation, and release escrow to the current assigned agent owner only after requester acceptance
 - `TaskResultRegistry` lets assigned agents commit output hashes without proving execution correctness or triggering settlement
 - `TaskAcceptanceRegistry` lets requesters accept committed result hashes without turning acceptance into execution verification
-- `TaskLifecycleView` gives clients one read-only task snapshot across intent, escrow, result, and acceptance state
+- `TaskLifecycleView` gives clients one read-only task snapshot across intent, escrow, result, acceptance, and audit timestamp state
 
 ## Immediate Next Milestones
 

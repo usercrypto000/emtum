@@ -177,6 +177,25 @@ contract TaskLifecycleViewTest is Test {
         );
     }
 
+    function test_ReadsAuditFieldsFromUnderlyingSources() public {
+        uint256 taskId = _openFundClaimCommitAndAcceptResult();
+
+        escrow.releaseAcceptedTaskIntent(taskId);
+
+        TaskLifecycleView.TaskLifecycle memory lifecycle = lifecycleView.getTaskLifecycle(taskId);
+        TaskIntentMarket.TaskIntent memory intent = market.getTaskIntent(taskId);
+        TaskFundingEscrow.EscrowRecord memory escrowRecord = escrow.getEscrowRecord(taskId);
+        TaskResultRegistry.ResultRecord memory result = resultRegistry.getResultRecord(taskId);
+        TaskAcceptanceRegistry.AcceptanceRecord memory acceptance = acceptanceRegistry.getAcceptanceRecord(taskId);
+
+        assertEq(lifecycle.escrowPayer, escrowRecord.payer);
+        assertEq(lifecycle.resultAgentId, result.agentId);
+        assertEq(lifecycle.createdAt, intent.createdAt);
+        assertEq(lifecycle.assignedAt, intent.assignedAt);
+        assertEq(lifecycle.resultSubmittedAt, result.submittedAt);
+        assertEq(lifecycle.acceptedAt, acceptance.acceptedAt);
+    }
+
     function test_ReadsCancelledRefundedTaskLifecycle() public {
         uint256 taskId = _openAndFundTaskIntent();
 

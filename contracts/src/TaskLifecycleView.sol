@@ -13,8 +13,14 @@ contract TaskLifecycleView {
         bytes32 resultHash;
         bytes32 acceptanceHash;
         address requester;
+        address escrowPayer;
         bytes32 assignedAgentId;
+        bytes32 resultAgentId;
         uint256 escrowAmount;
+        uint64 createdAt;
+        uint64 assignedAt;
+        uint64 resultSubmittedAt;
+        uint64 acceptedAt;
     }
 
     error InvalidTaskIntentMarket();
@@ -67,8 +73,14 @@ contract TaskLifecycleView {
             resultHash: result.resultHash,
             acceptanceHash: acceptance.resultHash,
             requester: intent.requester,
+            escrowPayer: escrow.payer,
             assignedAgentId: intent.assignedAgentId,
-            escrowAmount: escrow.amount
+            resultAgentId: result.agentId,
+            escrowAmount: escrow.amount,
+            createdAt: intent.createdAt,
+            assignedAt: intent.assignedAt,
+            resultSubmittedAt: result.submittedAt,
+            acceptedAt: acceptance.acceptedAt
         });
     }
 }

@@ -12,6 +12,7 @@ import {TaskAcceptanceRegistry} from "../src/TaskAcceptanceRegistry.sol";
 import {TaskAuthorizationGate} from "../src/TaskAuthorizationGate.sol";
 import {TaskFundingEscrow} from "../src/TaskFundingEscrow.sol";
 import {TaskIntentMarket} from "../src/TaskIntentMarket.sol";
+import {TaskLifecycleView} from "../src/TaskLifecycleView.sol";
 import {TaskResultRegistry} from "../src/TaskResultRegistry.sol";
 import {HonkVerifier} from "../src/verifiers/EmtunPolicyVerifier.sol";
 import {MerkleInclusionFixture} from "./fixtures/MerkleInclusionFixture.sol";
@@ -26,6 +27,7 @@ contract EmtunSimulationSmokeTest is Test {
     TaskFundingEscrow internal escrow;
     TaskResultRegistry internal resultRegistry;
     TaskAcceptanceRegistry internal acceptanceRegistry;
+    TaskLifecycleView internal lifecycleView;
 
     bytes32 internal constant AGENT_ID = keccak256("emtun.agent.alpha");
     bytes32 internal constant TASK_DATA_HASH = keccak256("task.intent.payload");
@@ -51,6 +53,9 @@ contract EmtunSimulationSmokeTest is Test {
         resultRegistry = new TaskResultRegistry(address(registry), address(market));
         acceptanceRegistry = new TaskAcceptanceRegistry(address(market), address(resultRegistry));
         escrow = new TaskFundingEscrow(address(registry), address(market), address(acceptanceRegistry));
+        lifecycleView = new TaskLifecycleView(
+            address(market), address(escrow), address(resultRegistry), address(acceptanceRegistry)
+        );
     }
 
     function test_FullAuthorizationLifecycleSmoke() public {
@@ -95,6 +100,8 @@ contract EmtunSimulationSmokeTest is Test {
         emit log("TASK RESULT ACCEPTANCE CONFIRMED");
 
         escrow.releaseAcceptedTaskIntent(taskId);
+        TaskLifecycleView.TaskLifecycle memory lifecycle = lifecycleView.getTaskLifecycle(taskId);
+        emit log_named_uint("lifecycle_escrow_status_after_release", uint256(lifecycle.escrowStatus));
         emit log("TASK SETTLEMENT RELEASE CONFIRMED");
 
         vm.prank(owner);
