@@ -21,7 +21,7 @@ This tracker records the public simulation builds for Emtun. Each build must pre
 | 14. Task intent stateful fuzz | `4794fa9` | Shipped | Bounded stateful fuzz model for task opening, claiming, and cancellation | Task IDs stay monotonic, assigned and cancelled tasks stay terminal, and onchain task state matches the model across fuzzed operation sequences | `cd contracts; forge test --match-path test/TaskIntentMarketStatefulFuzz.t.sol -vvv` |
 | 15. Task funding escrow | `e9e3940` | Shipped | ETH funding and cancellation refund for task intents | Requesters can fund open task intents and recover funds after cancellation, while agent payout remains out of scope | `cd contracts; forge test --match-path test/TaskFundingEscrow.t.sol -vvv` |
 | 16. Task result registry | `058120f` | Shipped | Assigned agent result hash commitment | The assigned agent owner can commit an output hash for accountability without proving execution correctness or triggering settlement | `cd contracts; forge test --match-path test/TaskResultRegistry.t.sol -vvv` |
-| 17. Task acceptance registry | `pending` | In progress | Requester acceptance of committed result hashes | The requester can accept the exact committed result hash, creating a future settlement predicate without proving execution correctness | `cd contracts; forge test --match-path test/TaskAcceptanceRegistry.t.sol -vvv` |
+| 17. Task acceptance registry | `0cce68f` | Shipped | Requester acceptance of committed result hashes | The requester can accept the exact committed result hash, creating a future settlement predicate without proving execution correctness | `cd contracts; forge test --match-path test/TaskAcceptanceRegistry.t.sol -vvv` |
 
 ## Open Build Queue
 
