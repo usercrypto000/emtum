@@ -9,6 +9,7 @@ import {EmtunVerifierAdapter} from "../src/EmtunVerifierAdapter.sol";
 import {MockEAS} from "../src/MockEAS.sol";
 import {PolicyRootChain} from "../src/PolicyRootChain.sol";
 import {TaskAuthorizationGate} from "../src/TaskAuthorizationGate.sol";
+import {TaskFundingEscrow} from "../src/TaskFundingEscrow.sol";
 import {TaskIntentMarket} from "../src/TaskIntentMarket.sol";
 import {HonkVerifier} from "../src/verifiers/EmtunPolicyVerifier.sol";
 import {MerkleInclusionFixture} from "./fixtures/MerkleInclusionFixture.sol";
@@ -20,9 +21,11 @@ contract EmtunSimulationSmokeTest is Test {
     PolicyRootChain internal rootChain;
     TaskAuthorizationGate internal gate;
     TaskIntentMarket internal market;
+    TaskFundingEscrow internal escrow;
 
     bytes32 internal constant AGENT_ID = keccak256("emtun.agent.alpha");
     bytes32 internal constant TASK_DATA_HASH = keccak256("task.intent.payload");
+    uint256 internal constant FUNDING_AMOUNT = 1 ether;
     bytes32 internal constant NEXT_ROOT = keccak256("policy.root.next");
 
     address internal owner = address(0xA11CE);
@@ -40,6 +43,7 @@ contract EmtunSimulationSmokeTest is Test {
         boundary = new EmtunEASAttestationBoundary(address(registry), address(eas));
         gate = new TaskAuthorizationGate(address(registry), address(boundary), address(reader));
         market = new TaskIntentMarket(address(registry), address(gate));
+        escrow = new TaskFundingEscrow(address(market));
     }
 
     function test_FullAuthorizationLifecycleSmoke() public {
@@ -64,6 +68,11 @@ contract EmtunSimulationSmokeTest is Test {
 
         vm.prank(requester);
         uint256 taskId = market.openTaskIntent(actionHash, TASK_DATA_HASH);
+        vm.deal(requester, FUNDING_AMOUNT);
+        vm.prank(requester);
+        escrow.fundTaskIntent{value: FUNDING_AMOUNT}(taskId);
+        emit log_named_uint("task_funding_wei", FUNDING_AMOUNT);
+        emit log("TASK FUNDING CONFIRMED");
         vm.prank(owner);
         market.claimTaskIntent(taskId, AGENT_ID, proof);
         emit log_named_uint("task_intent_id", taskId);

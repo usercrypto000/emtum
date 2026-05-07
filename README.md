@@ -15,12 +15,12 @@ Emtun is a local simulation of Scoped Authorization Proofs (SAP), a ZK primitive
 - `npm run merkle-inclusion` builds a depth-8 Poseidon2 Merkle tree, proves inclusion for one leaf, and checks a negative case. It should log `MERKLE INCLUSION CONFIRMED` and `NEGATIVE CASE CONFIRMED`.
 - `npm run generate:verifier` generates the EVM verifier and a reusable proof fixture for the current circuit.
 - `npm run export:verifier-call` exports an auditable verifier-call fixture from the generated proof.
-- `contracts/` contains the generated Honk verifier, verifier adapter, policy root chain, agent registry boundary, EAS-facing attestation mock, authorization reader, task authorization gate, task intent market, deployment script, and Foundry tests. Escrow, settlement, and execution verification have not been implemented yet.
+- `contracts/` contains the generated Honk verifier, verifier adapter, policy root chain, agent registry boundary, EAS-facing attestation mock, authorization reader, task authorization gate, task intent market, task funding escrow, deployment script, and Foundry tests. Agent payout, settlement, and execution verification have not been implemented yet.
 
 ## Structure
 
 - `circuit/`: Noir inclusion circuit, local Poseidon2 Merkle helper, and compiled artifacts
-- `contracts/`: Foundry surface, generated verifier, verifier adapter, policy root chain, agent registry boundary, EAS-facing attestation mock, authorization reader, task authorization gate, task intent market, deployment script, and verifier gas tests
+- `contracts/`: Foundry surface, generated verifier, verifier adapter, policy root chain, agent registry boundary, EAS-facing attestation mock, authorization reader, task authorization gate, task intent market, task funding escrow, deployment script, and verifier gas tests
 - `scripts/`: TypeScript proof tooling and rerunnable validation harnesses
 - `Research/`: architectural notes, drafts, and publication planning
 - `lib/` and `test/`: reserved for future shared modules and fixtures
@@ -54,6 +54,7 @@ From [contracts](C:/Users/HP/KnoxOS/projects/entum/contracts):
 ```bash
 forge test -vvv
 forge test --match-path test/EmtunSimulationSmoke.t.sol -vvv
+forge test --match-path test/TaskFundingEscrow.t.sol -vvv
 forge test --match-path test/TaskIntentMarketStatefulFuzz.t.sol -vvv
 forge script script/DeploySimulation.s.sol:DeploySimulation
 ```
@@ -81,6 +82,7 @@ Production design constraints already established in the repo:
 - `EmtunAuthorizationReader` composes the current root lookup with proof verification and rejects stale roots after rotation
 - `TaskAuthorizationGate` combines registration, active identity attestation, and SAP proof validity without adding marketplace execution semantics
 - `TaskIntentMarket` lets requesters open task intents and lets agents claim them only after `TaskAuthorizationGate` accepts authorization, without adding escrow or execution verification
+- `TaskFundingEscrow` lets requesters fund open task intents and recover funds after cancellation, without adding agent payout or execution settlement
 
 ## Immediate Next Milestones
 

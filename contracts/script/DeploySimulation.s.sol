@@ -9,6 +9,7 @@ import {EmtunVerifierAdapter} from "../src/EmtunVerifierAdapter.sol";
 import {MockEAS} from "../src/MockEAS.sol";
 import {PolicyRootChain} from "../src/PolicyRootChain.sol";
 import {TaskAuthorizationGate} from "../src/TaskAuthorizationGate.sol";
+import {TaskFundingEscrow} from "../src/TaskFundingEscrow.sol";
 import {TaskIntentMarket} from "../src/TaskIntentMarket.sol";
 import {HonkVerifier} from "../src/verifiers/EmtunPolicyVerifier.sol";
 
@@ -23,6 +24,7 @@ contract DeploySimulation is Script {
         EmtunAuthorizationReader authorizationReader;
         TaskAuthorizationGate taskAuthorizationGate;
         TaskIntentMarket taskIntentMarket;
+        TaskFundingEscrow taskFundingEscrow;
     }
 
     function run() external returns (Deployment memory deployment) {
@@ -44,6 +46,7 @@ contract DeploySimulation is Script {
         );
         deployment.taskIntentMarket =
             new TaskIntentMarket(address(deployment.agentRegistry), address(deployment.taskAuthorizationGate));
+        deployment.taskFundingEscrow = new TaskFundingEscrow(address(deployment.taskIntentMarket));
 
         vm.stopBroadcast();
     }

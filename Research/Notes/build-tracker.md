@@ -19,10 +19,11 @@ This tracker records the public simulation builds for Emtun. Each build must pre
 | 12. Task intent market | `6629094` | Shipped | Requester task intents and owner-gated agent claims through SAP authorization | A task can be assigned only when the current agent owner submits the claim and SAP authorization verifies | `cd contracts; forge test --match-path test/EmtunSimulationSmoke.t.sol -vvv` |
 | 13. Build tracker | `5b39f7a` | Shipped | Public tracker for shipped builds, proof claims, and screenshot commands | The project now has a canonical development ledger before escrow or execution work begins | `cd contracts; forge test --match-path test/EmtunSimulationSmoke.t.sol -vvv` |
 | 14. Task intent stateful fuzz | `4794fa9` | Shipped | Bounded stateful fuzz model for task opening, claiming, and cancellation | Task IDs stay monotonic, assigned and cancelled tasks stay terminal, and onchain task state matches the model across fuzzed operation sequences | `cd contracts; forge test --match-path test/TaskIntentMarketStatefulFuzz.t.sol -vvv` |
+| 15. Task funding escrow | `pending` | In progress | ETH funding and cancellation refund for task intents | Requesters can fund open task intents and recover funds after cancellation, while agent payout remains out of scope | `cd contracts; forge test --match-path test/TaskFundingEscrow.t.sol -vvv` |
 
 ## Open Build Queue
 
-- Escrow should stay blocked until the assignment boundary is stable and documented.
+- Agent payout should stay blocked until execution and acceptance boundaries are explicitly modeled.
 - Execution verification remains out of scope for V1 unless a separate primitive is introduced.
 - Production leaf schema remains unresolved; changing it after deployment invalidates all policy commitments.
 - Recursive aggregation remains a later verifier economics milestone, not a simulation blocker.
