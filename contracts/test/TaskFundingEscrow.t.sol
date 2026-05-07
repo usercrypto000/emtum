@@ -8,9 +8,11 @@ import {EmtunEASAttestationBoundary} from "../src/EmtunEASAttestationBoundary.so
 import {EmtunVerifierAdapter} from "../src/EmtunVerifierAdapter.sol";
 import {MockEAS} from "../src/MockEAS.sol";
 import {PolicyRootChain} from "../src/PolicyRootChain.sol";
+import {TaskAcceptanceRegistry} from "../src/TaskAcceptanceRegistry.sol";
 import {TaskAuthorizationGate} from "../src/TaskAuthorizationGate.sol";
 import {TaskFundingEscrow} from "../src/TaskFundingEscrow.sol";
 import {TaskIntentMarket} from "../src/TaskIntentMarket.sol";
+import {TaskResultRegistry} from "../src/TaskResultRegistry.sol";
 import {HonkVerifier} from "../src/verifiers/EmtunPolicyVerifier.sol";
 import {MerkleInclusionFixture} from "./fixtures/MerkleInclusionFixture.sol";
 
@@ -49,9 +51,12 @@ contract TaskFundingEscrowTest is Test {
     TaskAuthorizationGate internal gate;
     TaskIntentMarket internal market;
     TaskFundingEscrow internal escrow;
+    TaskResultRegistry internal resultRegistry;
+    TaskAcceptanceRegistry internal acceptanceRegistry;
 
     bytes32 internal constant AGENT_ID = keccak256("emtun.agent.alpha");
     bytes32 internal constant TASK_DATA_HASH = keccak256("task.intent.payload");
+    bytes32 internal constant RESULT_HASH = keccak256("task.result.payload");
     uint256 internal constant FUNDING_AMOUNT = 1 ether;
 
     address internal owner = address(0xA11CE);
@@ -69,7 +74,9 @@ contract TaskFundingEscrowTest is Test {
         boundary = new EmtunEASAttestationBoundary(address(registry), address(eas));
         gate = new TaskAuthorizationGate(address(registry), address(boundary), address(reader));
         market = new TaskIntentMarket(address(registry), address(gate));
-        escrow = new TaskFundingEscrow(address(market));
+        resultRegistry = new TaskResultRegistry(address(registry), address(market));
+        acceptanceRegistry = new TaskAcceptanceRegistry(address(market), address(resultRegistry));
+        escrow = new TaskFundingEscrow(address(registry), address(market), address(acceptanceRegistry));
 
         vm.deal(requester, 10 ether);
         vm.deal(stranger, 10 ether);
@@ -203,9 +210,81 @@ contract TaskFundingEscrowTest is Test {
         payer.requestRefund(taskId);
     }
 
+    function test_ReleasesAcceptedTaskIntentToCurrentAgentOwner() public {
+        uint256 taskId = _openFundClaimCommitAndAccept();
+        uint256 ownerBalanceBefore = owner.balance;
+
+        vm.prank(stranger);
+        escrow.releaseAcceptedTaskIntent(taskId);
+
+        TaskFundingEscrow.EscrowRecord memory record = escrow.getEscrowRecord(taskId);
+
+        assertEq(record.payer, requester);
+        assertEq(record.amount, FUNDING_AMOUNT);
+        assertEq(uint8(record.status), uint8(TaskFundingEscrow.EscrowStatus.Released));
+        assertEq(owner.balance, ownerBalanceBefore + FUNDING_AMOUNT);
+        assertEq(address(escrow).balance, 0);
+    }
+
+    function test_ReleasesAcceptedTaskIntentToTransferredAgentOwner() public {
+        uint256 taskId = _openFundClaimCommitAndAccept();
+        uint256 strangerBalanceBefore = stranger.balance;
+
+        vm.prank(owner);
+        registry.transferAgentOwner(AGENT_ID, stranger);
+
+        escrow.releaseAcceptedTaskIntent(taskId);
+
+        TaskFundingEscrow.EscrowRecord memory record = escrow.getEscrowRecord(taskId);
+
+        assertEq(uint8(record.status), uint8(TaskFundingEscrow.EscrowStatus.Released));
+        assertEq(stranger.balance, strangerBalanceBefore + FUNDING_AMOUNT);
+        assertEq(address(escrow).balance, 0);
+    }
+
+    function test_RevertsWhenReleasingBeforeResultAcceptance() public {
+        (bytes memory proof, bytes32 actionHash) = _registerAndAttestAgent();
+
+        vm.prank(requester);
+        uint256 taskId = market.openTaskIntent(actionHash, TASK_DATA_HASH);
+        vm.prank(requester);
+        escrow.fundTaskIntent{value: FUNDING_AMOUNT}(taskId);
+        vm.prank(owner);
+        market.claimTaskIntent(taskId, AGENT_ID, proof);
+
+        vm.expectRevert(abi.encodeWithSelector(TaskFundingEscrow.TaskResultNotAccepted.selector, taskId));
+        escrow.releaseAcceptedTaskIntent(taskId);
+    }
+
+    function test_RevertsWhenReleasingUnfundedTaskIntent() public {
+        uint256 taskId = _openTaskIntent();
+
+        vm.expectRevert(abi.encodeWithSelector(TaskFundingEscrow.EscrowNotFunded.selector, taskId));
+        escrow.releaseAcceptedTaskIntent(taskId);
+    }
+
+    function test_RevertsWhenReleasingTwice() public {
+        uint256 taskId = _openFundClaimCommitAndAccept();
+
+        escrow.releaseAcceptedTaskIntent(taskId);
+
+        vm.expectRevert(abi.encodeWithSelector(TaskFundingEscrow.EscrowNotFunded.selector, taskId));
+        escrow.releaseAcceptedTaskIntent(taskId);
+    }
+
     function test_RevertsWhenTaskIntentMarketIsNotContract() public {
         vm.expectRevert(TaskFundingEscrow.InvalidTaskIntentMarket.selector);
-        new TaskFundingEscrow(address(0));
+        new TaskFundingEscrow(address(registry), address(0), address(acceptanceRegistry));
+    }
+
+    function test_RevertsWhenAgentRegistryIsNotContract() public {
+        vm.expectRevert(TaskFundingEscrow.InvalidAgentRegistry.selector);
+        new TaskFundingEscrow(address(0), address(market), address(acceptanceRegistry));
+    }
+
+    function test_RevertsWhenTaskAcceptanceRegistryIsNotContract() public {
+        vm.expectRevert(TaskFundingEscrow.InvalidTaskAcceptanceRegistry.selector);
+        new TaskFundingEscrow(address(registry), address(market), address(0));
     }
 
     function _openAndFundTaskIntent() private returns (uint256 taskId) {
@@ -218,6 +297,21 @@ contract TaskFundingEscrowTest is Test {
     function _openTaskIntent() private returns (uint256 taskId) {
         vm.prank(requester);
         taskId = market.openTaskIntent(_actionHash(), TASK_DATA_HASH);
+    }
+
+    function _openFundClaimCommitAndAccept() private returns (uint256 taskId) {
+        (bytes memory proof, bytes32 actionHash) = _registerAndAttestAgent();
+
+        vm.prank(requester);
+        taskId = market.openTaskIntent(actionHash, TASK_DATA_HASH);
+        vm.prank(requester);
+        escrow.fundTaskIntent{value: FUNDING_AMOUNT}(taskId);
+        vm.prank(owner);
+        market.claimTaskIntent(taskId, AGENT_ID, proof);
+        vm.prank(owner);
+        resultRegistry.commitTaskResult(taskId, RESULT_HASH);
+        vm.prank(requester);
+        acceptanceRegistry.acceptTaskResult(taskId, RESULT_HASH);
     }
 
     function _registerAndAttestAgent() private returns (bytes memory proof, bytes32 actionHash) {

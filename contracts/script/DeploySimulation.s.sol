@@ -12,6 +12,7 @@ import {TaskAcceptanceRegistry} from "../src/TaskAcceptanceRegistry.sol";
 import {TaskAuthorizationGate} from "../src/TaskAuthorizationGate.sol";
 import {TaskFundingEscrow} from "../src/TaskFundingEscrow.sol";
 import {TaskIntentMarket} from "../src/TaskIntentMarket.sol";
+import {TaskLifecycleView} from "../src/TaskLifecycleView.sol";
 import {TaskResultRegistry} from "../src/TaskResultRegistry.sol";
 import {HonkVerifier} from "../src/verifiers/EmtunPolicyVerifier.sol";
 
@@ -29,6 +30,7 @@ contract DeploySimulation is Script {
         TaskFundingEscrow taskFundingEscrow;
         TaskResultRegistry taskResultRegistry;
         TaskAcceptanceRegistry taskAcceptanceRegistry;
+        TaskLifecycleView taskLifecycleView;
     }
 
     function run() external returns (Deployment memory deployment) {
@@ -50,11 +52,21 @@ contract DeploySimulation is Script {
         );
         deployment.taskIntentMarket =
             new TaskIntentMarket(address(deployment.agentRegistry), address(deployment.taskAuthorizationGate));
-        deployment.taskFundingEscrow = new TaskFundingEscrow(address(deployment.taskIntentMarket));
         deployment.taskResultRegistry =
             new TaskResultRegistry(address(deployment.agentRegistry), address(deployment.taskIntentMarket));
         deployment.taskAcceptanceRegistry =
             new TaskAcceptanceRegistry(address(deployment.taskIntentMarket), address(deployment.taskResultRegistry));
+        deployment.taskFundingEscrow = new TaskFundingEscrow(
+            address(deployment.agentRegistry),
+            address(deployment.taskIntentMarket),
+            address(deployment.taskAcceptanceRegistry)
+        );
+        deployment.taskLifecycleView = new TaskLifecycleView(
+            address(deployment.taskIntentMarket),
+            address(deployment.taskFundingEscrow),
+            address(deployment.taskResultRegistry),
+            address(deployment.taskAcceptanceRegistry)
+        );
 
         vm.stopBroadcast();
     }

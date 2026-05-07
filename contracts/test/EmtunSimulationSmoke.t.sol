@@ -48,9 +48,9 @@ contract EmtunSimulationSmokeTest is Test {
         boundary = new EmtunEASAttestationBoundary(address(registry), address(eas));
         gate = new TaskAuthorizationGate(address(registry), address(boundary), address(reader));
         market = new TaskIntentMarket(address(registry), address(gate));
-        escrow = new TaskFundingEscrow(address(market));
         resultRegistry = new TaskResultRegistry(address(registry), address(market));
         acceptanceRegistry = new TaskAcceptanceRegistry(address(market), address(resultRegistry));
+        escrow = new TaskFundingEscrow(address(registry), address(market), address(acceptanceRegistry));
     }
 
     function test_FullAuthorizationLifecycleSmoke() public {
@@ -93,6 +93,9 @@ contract EmtunSimulationSmokeTest is Test {
         vm.prank(requester);
         acceptanceRegistry.acceptTaskResult(taskId, RESULT_HASH);
         emit log("TASK RESULT ACCEPTANCE CONFIRMED");
+
+        escrow.releaseAcceptedTaskIntent(taskId);
+        emit log("TASK SETTLEMENT RELEASE CONFIRMED");
 
         vm.prank(owner);
         rootChain.updateRoot(AGENT_ID, NEXT_ROOT);
