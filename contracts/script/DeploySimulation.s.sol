@@ -8,6 +8,7 @@ import {EmtunEASAttestationBoundary} from "../src/EmtunEASAttestationBoundary.so
 import {EmtunVerifierAdapter} from "../src/EmtunVerifierAdapter.sol";
 import {MockEAS} from "../src/MockEAS.sol";
 import {PolicyRootChain} from "../src/PolicyRootChain.sol";
+import {TaskAcceptanceRegistry} from "../src/TaskAcceptanceRegistry.sol";
 import {TaskAuthorizationGate} from "../src/TaskAuthorizationGate.sol";
 import {TaskFundingEscrow} from "../src/TaskFundingEscrow.sol";
 import {TaskIntentMarket} from "../src/TaskIntentMarket.sol";
@@ -27,6 +28,7 @@ contract DeploySimulation is Script {
         TaskIntentMarket taskIntentMarket;
         TaskFundingEscrow taskFundingEscrow;
         TaskResultRegistry taskResultRegistry;
+        TaskAcceptanceRegistry taskAcceptanceRegistry;
     }
 
     function run() external returns (Deployment memory deployment) {
@@ -51,6 +53,8 @@ contract DeploySimulation is Script {
         deployment.taskFundingEscrow = new TaskFundingEscrow(address(deployment.taskIntentMarket));
         deployment.taskResultRegistry =
             new TaskResultRegistry(address(deployment.agentRegistry), address(deployment.taskIntentMarket));
+        deployment.taskAcceptanceRegistry =
+            new TaskAcceptanceRegistry(address(deployment.taskIntentMarket), address(deployment.taskResultRegistry));
 
         vm.stopBroadcast();
     }

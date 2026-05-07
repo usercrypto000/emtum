@@ -8,6 +8,7 @@ import {EmtunEASAttestationBoundary} from "../src/EmtunEASAttestationBoundary.so
 import {EmtunVerifierAdapter} from "../src/EmtunVerifierAdapter.sol";
 import {MockEAS} from "../src/MockEAS.sol";
 import {PolicyRootChain} from "../src/PolicyRootChain.sol";
+import {TaskAcceptanceRegistry} from "../src/TaskAcceptanceRegistry.sol";
 import {TaskAuthorizationGate} from "../src/TaskAuthorizationGate.sol";
 import {TaskFundingEscrow} from "../src/TaskFundingEscrow.sol";
 import {TaskIntentMarket} from "../src/TaskIntentMarket.sol";
@@ -24,6 +25,7 @@ contract EmtunSimulationSmokeTest is Test {
     TaskIntentMarket internal market;
     TaskFundingEscrow internal escrow;
     TaskResultRegistry internal resultRegistry;
+    TaskAcceptanceRegistry internal acceptanceRegistry;
 
     bytes32 internal constant AGENT_ID = keccak256("emtun.agent.alpha");
     bytes32 internal constant TASK_DATA_HASH = keccak256("task.intent.payload");
@@ -48,6 +50,7 @@ contract EmtunSimulationSmokeTest is Test {
         market = new TaskIntentMarket(address(registry), address(gate));
         escrow = new TaskFundingEscrow(address(market));
         resultRegistry = new TaskResultRegistry(address(registry), address(market));
+        acceptanceRegistry = new TaskAcceptanceRegistry(address(market), address(resultRegistry));
     }
 
     function test_FullAuthorizationLifecycleSmoke() public {
@@ -86,6 +89,10 @@ contract EmtunSimulationSmokeTest is Test {
         resultRegistry.commitTaskResult(taskId, RESULT_HASH);
         emit log_named_bytes32("result_hash", RESULT_HASH);
         emit log("TASK RESULT COMMITMENT CONFIRMED");
+
+        vm.prank(requester);
+        acceptanceRegistry.acceptTaskResult(taskId, RESULT_HASH);
+        emit log("TASK RESULT ACCEPTANCE CONFIRMED");
 
         vm.prank(owner);
         rootChain.updateRoot(AGENT_ID, NEXT_ROOT);
