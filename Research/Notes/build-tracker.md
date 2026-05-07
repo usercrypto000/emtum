@@ -20,7 +20,7 @@ This tracker records the public simulation builds for Emtun. Each build must pre
 | 13. Build tracker | `5b39f7a` | Shipped | Public tracker for shipped builds, proof claims, and screenshot commands | The project now has a canonical development ledger before escrow or execution work begins | `cd contracts; forge test --match-path test/EmtunSimulationSmoke.t.sol -vvv` |
 | 14. Task intent stateful fuzz | `4794fa9` | Shipped | Bounded stateful fuzz model for task opening, claiming, and cancellation | Task IDs stay monotonic, assigned and cancelled tasks stay terminal, and onchain task state matches the model across fuzzed operation sequences | `cd contracts; forge test --match-path test/TaskIntentMarketStatefulFuzz.t.sol -vvv` |
 | 15. Task funding escrow | `e9e3940` | Shipped | ETH funding and cancellation refund for task intents | Requesters can fund open task intents and recover funds after cancellation, while agent payout remains out of scope | `cd contracts; forge test --match-path test/TaskFundingEscrow.t.sol -vvv` |
-| 16. Task result registry | `pending` | In progress | Assigned agent result hash commitment | The assigned agent owner can commit an output hash for accountability without proving execution correctness or triggering settlement | `cd contracts; forge test --match-path test/TaskResultRegistry.t.sol -vvv` |
+| 16. Task result registry | `058120f` | Shipped | Assigned agent result hash commitment | The assigned agent owner can commit an output hash for accountability without proving execution correctness or triggering settlement | `cd contracts; forge test --match-path test/TaskResultRegistry.t.sol -vvv` |
 
 ## Open Build Queue
 
