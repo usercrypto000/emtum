@@ -88,6 +88,7 @@ contract TaskLifecycleViewTest is Test {
             bytes32(0),
             0
         );
+        _assertFlags(lifecycle, true, false, false, false, false, false, false, false);
     }
 
     function test_ReadsFundedTaskLifecycle() public {
@@ -105,6 +106,7 @@ contract TaskLifecycleViewTest is Test {
             bytes32(0),
             FUNDING_AMOUNT
         );
+        _assertFlags(lifecycle, true, false, false, true, false, false, false, false);
     }
 
     function test_ReadsAssignedTaskLifecycle() public {
@@ -122,6 +124,7 @@ contract TaskLifecycleViewTest is Test {
             AGENT_ID,
             FUNDING_AMOUNT
         );
+        _assertFlags(lifecycle, false, true, false, true, false, false, false, false);
     }
 
     function test_ReadsResultCommittedTaskLifecycle() public {
@@ -139,6 +142,7 @@ contract TaskLifecycleViewTest is Test {
             AGENT_ID,
             FUNDING_AMOUNT
         );
+        _assertFlags(lifecycle, false, true, false, true, false, false, true, false);
     }
 
     function test_ReadsAcceptedTaskLifecycle() public {
@@ -156,6 +160,7 @@ contract TaskLifecycleViewTest is Test {
             AGENT_ID,
             FUNDING_AMOUNT
         );
+        _assertFlags(lifecycle, false, true, false, true, false, false, true, true);
     }
 
     function test_ReadsReleasedTaskLifecycle() public {
@@ -175,6 +180,7 @@ contract TaskLifecycleViewTest is Test {
             AGENT_ID,
             FUNDING_AMOUNT
         );
+        _assertFlags(lifecycle, false, true, false, false, false, true, true, true);
     }
 
     function test_ReadsAuditFieldsFromUnderlyingSources() public {
@@ -217,6 +223,7 @@ contract TaskLifecycleViewTest is Test {
             bytes32(0),
             FUNDING_AMOUNT
         );
+        _assertFlags(lifecycle, false, false, true, false, true, false, false, false);
     }
 
     function test_ReadDoesNotMutateUnderlyingLifecycle() public {
@@ -310,5 +317,26 @@ contract TaskLifecycleViewTest is Test {
         assertEq(lifecycle.requester, requester_);
         assertEq(lifecycle.assignedAgentId, assignedAgentId);
         assertEq(lifecycle.escrowAmount, escrowAmount);
+    }
+
+    function _assertFlags(
+        TaskLifecycleView.TaskLifecycle memory lifecycle,
+        bool isOpen,
+        bool isAssigned,
+        bool isCancelled,
+        bool isFunded,
+        bool isRefunded,
+        bool isReleased,
+        bool isResultCommitted,
+        bool isAccepted
+    ) private pure {
+        assertEq(lifecycle.isOpen, isOpen);
+        assertEq(lifecycle.isAssigned, isAssigned);
+        assertEq(lifecycle.isCancelled, isCancelled);
+        assertEq(lifecycle.isFunded, isFunded);
+        assertEq(lifecycle.isRefunded, isRefunded);
+        assertEq(lifecycle.isReleased, isReleased);
+        assertEq(lifecycle.isResultCommitted, isResultCommitted);
+        assertEq(lifecycle.isAccepted, isAccepted);
     }
 }

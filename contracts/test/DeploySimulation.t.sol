@@ -22,6 +22,7 @@ contract DeploySimulationTest is Test {
         assertGt(address(deployment.taskResultRegistry).code.length, 0);
         assertGt(address(deployment.taskAcceptanceRegistry).code.length, 0);
         assertGt(address(deployment.taskLifecycleView).code.length, 0);
+        assertGt(address(deployment.authorizationStatusView).code.length, 0);
 
         assertEq(address(deployment.agentRegistry.policyRootChain()), address(deployment.policyRootChain));
         assertEq(address(deployment.attestationBoundary.agentRegistry()), address(deployment.agentRegistry));
@@ -54,6 +55,13 @@ contract DeploySimulationTest is Test {
         assertEq(address(deployment.taskLifecycleView.taskResultRegistry()), address(deployment.taskResultRegistry));
         assertEq(
             address(deployment.taskLifecycleView.taskAcceptanceRegistry()), address(deployment.taskAcceptanceRegistry)
+        );
+        assertEq(address(deployment.authorizationStatusView.agentRegistry()), address(deployment.agentRegistry));
+        assertEq(
+            address(deployment.authorizationStatusView.attestationBoundary()), address(deployment.attestationBoundary)
+        );
+        assertEq(
+            address(deployment.authorizationStatusView.authorizationReader()), address(deployment.authorizationReader)
         );
     }
 }

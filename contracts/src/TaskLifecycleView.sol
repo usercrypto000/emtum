@@ -21,6 +21,14 @@ contract TaskLifecycleView {
         uint64 assignedAt;
         uint64 resultSubmittedAt;
         uint64 acceptedAt;
+        bool isOpen;
+        bool isAssigned;
+        bool isCancelled;
+        bool isFunded;
+        bool isRefunded;
+        bool isReleased;
+        bool isResultCommitted;
+        bool isAccepted;
     }
 
     error InvalidTaskIntentMarket();
@@ -80,7 +88,15 @@ contract TaskLifecycleView {
             createdAt: intent.createdAt,
             assignedAt: intent.assignedAt,
             resultSubmittedAt: result.submittedAt,
-            acceptedAt: acceptance.acceptedAt
+            acceptedAt: acceptance.acceptedAt,
+            isOpen: intent.status == TaskIntentMarket.TaskStatus.Open,
+            isAssigned: intent.status == TaskIntentMarket.TaskStatus.Assigned,
+            isCancelled: intent.status == TaskIntentMarket.TaskStatus.Cancelled,
+            isFunded: escrow.status == TaskFundingEscrow.EscrowStatus.Funded,
+            isRefunded: escrow.status == TaskFundingEscrow.EscrowStatus.Refunded,
+            isReleased: escrow.status == TaskFundingEscrow.EscrowStatus.Released,
+            isResultCommitted: result.resultHash != bytes32(0),
+            isAccepted: acceptance.resultHash != bytes32(0)
         });
     }
 }

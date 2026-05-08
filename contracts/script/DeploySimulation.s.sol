@@ -4,6 +4,7 @@ pragma solidity ^0.8.13;
 import {Script} from "forge-std/Script.sol";
 import {AgentRegistry} from "../src/AgentRegistry.sol";
 import {EmtunAuthorizationReader} from "../src/EmtunAuthorizationReader.sol";
+import {EmtunAuthorizationStatusView} from "../src/EmtunAuthorizationStatusView.sol";
 import {EmtunEASAttestationBoundary} from "../src/EmtunEASAttestationBoundary.sol";
 import {EmtunVerifierAdapter} from "../src/EmtunVerifierAdapter.sol";
 import {MockEAS} from "../src/MockEAS.sol";
@@ -31,6 +32,7 @@ contract DeploySimulation is Script {
         TaskResultRegistry taskResultRegistry;
         TaskAcceptanceRegistry taskAcceptanceRegistry;
         TaskLifecycleView taskLifecycleView;
+        EmtunAuthorizationStatusView authorizationStatusView;
     }
 
     function run() external returns (Deployment memory deployment) {
@@ -66,6 +68,11 @@ contract DeploySimulation is Script {
             address(deployment.taskFundingEscrow),
             address(deployment.taskResultRegistry),
             address(deployment.taskAcceptanceRegistry)
+        );
+        deployment.authorizationStatusView = new EmtunAuthorizationStatusView(
+            address(deployment.agentRegistry),
+            address(deployment.attestationBoundary),
+            address(deployment.authorizationReader)
         );
 
         vm.stopBroadcast();

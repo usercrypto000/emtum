@@ -15,12 +15,12 @@ Emtun is a local simulation of Scoped Authorization Proofs (SAP), a ZK primitive
 - `npm run merkle-inclusion` builds a depth-8 Poseidon2 Merkle tree, proves inclusion for one leaf, and checks a negative case. It should log `MERKLE INCLUSION CONFIRMED` and `NEGATIVE CASE CONFIRMED`.
 - `npm run generate:verifier` generates the EVM verifier and a reusable proof fixture for the current circuit.
 - `npm run export:verifier-call` exports an auditable verifier-call fixture from the generated proof.
-- `contracts/` contains the generated Honk verifier, verifier adapter, policy root chain, agent registry boundary, EAS-facing attestation mock, authorization reader, task authorization gate, task intent market, task funding escrow, task result registry, task acceptance registry, read-only lifecycle view, deployment script, and Foundry tests. Escrow release is gated by requester acceptance. Execution verification has not been implemented.
+- `contracts/` contains the generated Honk verifier, verifier adapter, policy root chain, agent registry boundary, EAS-facing attestation mock, authorization reader, authorization status view, task authorization gate, task intent market, task funding escrow, task result registry, task acceptance registry, read-only lifecycle view, deployment script, and Foundry tests. Escrow release is gated by requester acceptance. Execution verification has not been implemented.
 
 ## Structure
 
 - `circuit/`: Noir inclusion circuit, local Poseidon2 Merkle helper, and compiled artifacts
-- `contracts/`: Foundry surface, generated verifier, verifier adapter, policy root chain, agent registry boundary, EAS-facing attestation mock, authorization reader, task authorization gate, task intent market, task funding escrow, task result registry, task acceptance registry, read-only lifecycle view, deployment script, and verifier gas tests
+- `contracts/`: Foundry surface, generated verifier, verifier adapter, policy root chain, agent registry boundary, EAS-facing attestation mock, authorization reader, authorization status view, task authorization gate, task intent market, task funding escrow, task result registry, task acceptance registry, read-only lifecycle view, deployment script, SDK read interfaces, and verifier gas tests
 - `scripts/`: TypeScript proof tooling and rerunnable validation harnesses
 - `Research/`: architectural notes, drafts, and publication planning
 - `lib/` and `test/`: reserved for future shared modules and fixtures
@@ -58,12 +58,15 @@ forge test --match-path test/TaskFundingEscrow.t.sol -vvv
 forge test --match-path test/TaskResultRegistry.t.sol -vvv
 forge test --match-path test/TaskAcceptanceRegistry.t.sol -vvv
 forge test --match-path test/TaskLifecycleView.t.sol -vvv
+forge test --match-path test/EmtunAuthorizationStatusView.t.sol -vvv
 forge test --match-path test/DeploySimulation.t.sol -vvv
+forge test --match-path test/SdkReadInterfaces.t.sol -vvv
 forge test --match-path test/TaskIntentMarketStatefulFuzz.t.sol -vvv
 forge test --match-path test/TaskFundingEscrowStatefulFuzz.t.sol -vvv
 forge test --match-path test/TaskResultRegistryStatefulFuzz.t.sol -vvv
 forge test --match-path test/TaskAcceptanceRegistryStatefulFuzz.t.sol -vvv
 forge test --match-path test/TaskSettlementStatefulFuzz.t.sol -vvv
+forge test --match-path test/TaskLifecycleViewStatefulFuzz.t.sol -vvv
 forge script script/DeploySimulation.s.sol:DeploySimulation
 ```
 
@@ -88,12 +91,13 @@ Production design constraints already established in the repo:
 - `AgentRegistry` owns `agentId` existence, then delegates policy updates to `PolicyRootChain`
 - `EmtunEASAttestationBoundary` attests to the registry and chain-head mechanism, not to a single policy root value, and treats owner transfer as an attestation invalidation boundary until the new owner re-attests
 - `EmtunAuthorizationReader` composes the current root lookup with proof verification and rejects stale roots after rotation
+- `EmtunAuthorizationStatusView` exposes a read-only SDK snapshot for registration, attestation, current root, and proof authorization state
 - `TaskAuthorizationGate` combines registration, active identity attestation, and SAP proof validity without adding marketplace execution semantics
 - `TaskIntentMarket` lets requesters open task intents and lets agents claim them only after `TaskAuthorizationGate` accepts authorization, without adding escrow or execution verification
 - `TaskFundingEscrow` lets requesters fund open task intents, recover funds after cancellation, and release escrow to the current assigned agent owner only after requester acceptance
 - `TaskResultRegistry` lets assigned agents commit output hashes without proving execution correctness or triggering settlement
 - `TaskAcceptanceRegistry` lets requesters accept committed result hashes without turning acceptance into execution verification
-- `TaskLifecycleView` gives clients one read-only task snapshot across intent, escrow, result, acceptance, and audit timestamp state
+- `TaskLifecycleView` gives clients one read-only task snapshot across intent, escrow, result, acceptance, status flags, and audit timestamp state
 
 ## Immediate Next Milestones
 
