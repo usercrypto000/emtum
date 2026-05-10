@@ -42,7 +42,7 @@ This tracker records the public simulation builds for Emtun. Each build must pre
 | 35. Read surface gas | `e62ccc9` | Shipped | Gas baselines for authorization status and lifecycle read views | Reviewers can separate expensive proof-backed reads from lightweight lifecycle observability | `cd contracts; forge test --match-path test/ReadSurfaceGas.t.sol -vvv` |
 | 36. Primitive boundary smoke | `e62ccc9` | Shipped | Compact smoke test logging `policy_root`, `action_hash`, authorization status, and execution non-goal | Public screenshots can show the SAP boundary without mixing in settlement semantics | `cd contracts; forge test --match-path test/PrimitiveBoundarySmoke.t.sol -vvv` |
 | 37. Reproducibility screenshot path | `e62ccc9` | Shipped | Notes and README commands for fixture audit plus primitive boundary smoke | Contributors get a direct path to reproduce the core public claim and fixture metadata | `cd scripts; npm run sap-fixture-audit` |
-| 38. SAP primitive manifest | `pending` | Pending | Machine-readable manifest for proof statement, inputs, witness boundary, verifier fixture, commands, and non-goals | Reviewers can start from one canonical primitive artifact before reading code | `cd scripts; npm run export:sap-manifest` |
+| 38. SAP primitive manifest | `c57f8c9` | Shipped | Machine-readable manifest for proof statement, inputs, witness boundary, verifier fixture, commands, and non-goals | Reviewers can start from one canonical primitive artifact before reading code | `cd scripts; npm run export:sap-manifest` |
 
 ## Open Build Queue
 
