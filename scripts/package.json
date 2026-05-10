@@ -5,7 +5,8 @@
   "scripts": {
     "export:verifier-call": "tsx test/export-verifier-call.ts",
     "generate:verifier": "tsx test/generate-verifier-fixture.ts",
-    "validate": "npm run typecheck && npm run poseidon-align && npm run merkle-inclusion && npm run export:verifier-call",
+    "sap-fixture-audit": "tsx test/sap-fixture-audit.ts",
+    "validate": "npm run typecheck && npm run poseidon-align && npm run merkle-inclusion && npm run export:verifier-call && npm run sap-fixture-audit",
     "merkle-inclusion": "tsx test/merkle-inclusion.ts",
     "poseidon-align": "tsx test/poseidon-align.ts",
     "typecheck": "tsc --noEmit"

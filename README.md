@@ -39,6 +39,7 @@ npm run poseidon-align
 npm run merkle-inclusion
 npm run generate:verifier
 npm run export:verifier-call
+npm run sap-fixture-audit
 npm run validate
 ```
 
@@ -61,6 +62,8 @@ forge test --match-path test/TaskLifecycleView.t.sol -vvv
 forge test --match-path test/EmtunAuthorizationStatusView.t.sol -vvv
 forge test --match-path test/DeploySimulation.t.sol -vvv
 forge test --match-path test/SdkReadInterfaces.t.sol -vvv
+forge test --match-path test/ReadSurfaceGas.t.sol -vvv
+forge test --match-path test/PrimitiveBoundarySmoke.t.sol -vvv
 forge test --match-path test/TaskIntentMarketStatefulFuzz.t.sol -vvv
 forge test --match-path test/TaskFundingEscrowStatefulFuzz.t.sol -vvv
 forge test --match-path test/TaskResultRegistryStatefulFuzz.t.sol -vvv
@@ -92,6 +95,7 @@ Production design constraints already established in the repo:
 - `EmtunEASAttestationBoundary` attests to the registry and chain-head mechanism, not to a single policy root value, and treats owner transfer as an attestation invalidation boundary until the new owner re-attests
 - `EmtunAuthorizationReader` composes the current root lookup with proof verification and rejects stale roots after rotation
 - `EmtunAuthorizationStatusView` exposes a read-only SDK snapshot for registration, attestation, current root, and proof authorization state
+- `PrimitiveBoundarySmoke` logs the core SAP public claim without introducing execution correctness or settlement semantics
 - `TaskAuthorizationGate` combines registration, active identity attestation, and SAP proof validity without adding marketplace execution semantics
 - `TaskIntentMarket` lets requesters open task intents and lets agents claim them only after `TaskAuthorizationGate` accepts authorization, without adding escrow or execution verification
 - `TaskFundingEscrow` lets requesters fund open task intents, recover funds after cancellation, and release escrow to the current assigned agent owner only after requester acceptance
