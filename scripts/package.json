@@ -4,9 +4,10 @@
   "description": "TypeScript tooling for Emtun proof and alignment scripts",
   "scripts": {
     "export:verifier-call": "tsx test/export-verifier-call.ts",
+    "export:sap-manifest": "tsx test/export-sap-manifest.ts",
     "generate:verifier": "tsx test/generate-verifier-fixture.ts",
     "sap-fixture-audit": "tsx test/sap-fixture-audit.ts",
-    "validate": "npm run typecheck && npm run poseidon-align && npm run merkle-inclusion && npm run export:verifier-call && npm run sap-fixture-audit",
+    "validate": "npm run typecheck && npm run poseidon-align && npm run merkle-inclusion && npm run export:verifier-call && npm run sap-fixture-audit && npm run export:sap-manifest",
     "merkle-inclusion": "tsx test/merkle-inclusion.ts",
     "poseidon-align": "tsx test/poseidon-align.ts",
     "typecheck": "tsc --noEmit"

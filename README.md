@@ -40,6 +40,7 @@ npm run merkle-inclusion
 npm run generate:verifier
 npm run export:verifier-call
 npm run sap-fixture-audit
+npm run export:sap-manifest
 npm run validate
 ```
 
@@ -95,6 +96,7 @@ Production design constraints already established in the repo:
 - `EmtunEASAttestationBoundary` attests to the registry and chain-head mechanism, not to a single policy root value, and treats owner transfer as an attestation invalidation boundary until the new owner re-attests
 - `EmtunAuthorizationReader` composes the current root lookup with proof verification and rejects stale roots after rotation
 - `EmtunAuthorizationStatusView` exposes a read-only SDK snapshot for registration, attestation, current root, and proof authorization state
+- `scripts/fixtures/sap-primitive-manifest.json` records the SAP proof statement, public inputs, private witness boundary, verifier fixture hash, and non-goals
 - `PrimitiveBoundarySmoke` logs the core SAP public claim without introducing execution correctness or settlement semantics
 - `TaskAuthorizationGate` combines registration, active identity attestation, and SAP proof validity without adding marketplace execution semantics
 - `TaskIntentMarket` lets requesters open task intents and lets agents claim them only after `TaskAuthorizationGate` accepts authorization, without adding escrow or execution verification

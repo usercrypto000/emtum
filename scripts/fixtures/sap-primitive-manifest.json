@@ -1,0 +1,76 @@
+{
+  "schema": "emtun.sap-primitive.v1",
+  "primitive": "Scoped Authorization Proof",
+  "generatedFrom": [
+    "scripts/fixtures/verifier-call.json",
+    "circuit/Nargo.toml"
+  ],
+  "circuit": {
+    "package": "circuit",
+    "compilerVersion": "1.0.0",
+    "treeDepth": 8,
+    "maxLeaves": 256,
+    "hash": "Poseidon2",
+    "leafPreimage": [
+      "action_type",
+      "scope",
+      "expiry",
+      "agent_salt"
+    ]
+  },
+  "proofStatement": [
+    "The private leaf preimage hashes to the public action_hash.",
+    "The action_hash is included in the committed policy_root.",
+    "Only the current policy root is accepted by the authorization reader."
+  ],
+  "publicInputs": {
+    "policyRoot": "0x2c729b792cb12c5d1eb23e941b7613a5ea410252e4f7f3c291ae7ba460dde717",
+    "actionHash": "0x0dd341cacc48ee6e615bda0e4f3f44bc7297f4b703df57ca78e69d03479a4a28"
+  },
+  "privateWitness": [
+    "action_type",
+    "scope",
+    "expiry",
+    "agent_salt",
+    "path[8]",
+    "indices[8]",
+    "all other policy leaves"
+  ],
+  "verifierFixture": {
+    "schema": "emtun.verifier-call.v1",
+    "target": "evm",
+    "proofBytes": 6848,
+    "proofSha256": "0xc5b3c1144cfa4fa52f0ea6afde957795e6ea77ea265724eeb15bfafd5aed3046",
+    "publicInputCount": 2,
+    "publicInputMapping": {
+      "policyRoot": 0,
+      "actionHash": 1
+    },
+    "abiFree": true
+  },
+  "contractSurfaces": {
+    "verifierAdapter": "verifyAuthorization(proof, policyRoot, actionHash)",
+    "authorizationReader": "isAuthorized(agentId, proof, actionHash)",
+    "authorizationStatusView": "getAgentAuthorizationStatus(agentId, proof, actionHash)",
+    "taskAuthorizationGate": "isTaskAuthorized(agentId, proof, actionHash)"
+  },
+  "verificationCommands": {
+    "scripts": [
+      "npm run validate",
+      "npm run sap-fixture-audit",
+      "npm run export:sap-manifest"
+    ],
+    "circuit": [
+      "nargo test"
+    ],
+    "contracts": [
+      "forge test --match-path test/PrimitiveBoundarySmoke.t.sol -vvv",
+      "forge test --match-path test/ReadSurfaceGas.t.sol -vvv"
+    ]
+  },
+  "nonGoals": [
+    "Execution correctness is not proven.",
+    "Requester acceptance is not execution verification.",
+    "Historical policy roots are not valid authorization roots."
+  ]
+}
