@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "TypeScript tooling for Emtun proof and alignment scripts",
   "scripts": {
+    "cli": "tsx bin/sap-cli.ts",
     "export:verifier-call": "tsx test/export-verifier-call.ts",
     "export:sap-manifest": "tsx test/export-sap-manifest.ts",
     "generate:verifier": "tsx test/generate-verifier-fixture.ts",
