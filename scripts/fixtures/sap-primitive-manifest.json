@@ -24,8 +24,8 @@
     "Only the current policy root is accepted by the authorization reader."
   ],
   "publicInputs": {
-    "policyRoot": "0x2c729b792cb12c5d1eb23e941b7613a5ea410252e4f7f3c291ae7ba460dde717",
-    "actionHash": "0x0dd341cacc48ee6e615bda0e4f3f44bc7297f4b703df57ca78e69d03479a4a28"
+    "policyRoot": "0x233b9e52f8ecb05e7e61b74baccbea46dfbf884abbc665861170581179eb420c",
+    "actionHash": "0x1fd1b66be8373cf03281c0428481f8b5c6323abcf5116ba7eeb2fa43975b99b6"
   },
   "privateWitness": [
     "action_type",
@@ -40,7 +40,7 @@
     "schema": "emtun.verifier-call.v1",
     "target": "evm",
     "proofBytes": 6848,
-    "proofSha256": "0xc5b3c1144cfa4fa52f0ea6afde957795e6ea77ea265724eeb15bfafd5aed3046",
+    "proofSha256": "0xd2c44120d92b95f8c65dc37461e0603809d6b4d29434e5547b547a8f620acdc9",
     "publicInputCount": 2,
     "publicInputMapping": {
       "policyRoot": 0,
