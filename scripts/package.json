@@ -3,11 +3,13 @@
   "version": "1.0.0",
   "description": "TypeScript tooling for Emtun proof and alignment scripts",
   "scripts": {
+    "cli": "tsx bin/sap-cli.ts",
     "export:verifier-call": "tsx test/export-verifier-call.ts",
     "export:sap-manifest": "tsx test/export-sap-manifest.ts",
     "generate:verifier": "tsx test/generate-verifier-fixture.ts",
     "sap-fixture-audit": "tsx test/sap-fixture-audit.ts",
-    "validate": "npm run typecheck && npm run poseidon-align && npm run merkle-inclusion && npm run export:verifier-call && npm run sap-fixture-audit && npm run export:sap-manifest",
+    "test:sap-client": "tsx test/sap-client-integration.ts",
+    "validate": "npm run typecheck && npm run poseidon-align && npm run merkle-inclusion && npm run test:sap-client && npm run export:verifier-call && npm run sap-fixture-audit && npm run export:sap-manifest",
     "merkle-inclusion": "tsx test/merkle-inclusion.ts",
     "poseidon-align": "tsx test/poseidon-align.ts",
     "typecheck": "tsc --noEmit"
@@ -17,7 +19,8 @@
   "license": "MIT",
   "dependencies": {
     "@aztec/bb.js": "^4.0.4",
-    "@noir-lang/noir_js": "^1.0.0-beta.19"
+    "@noir-lang/noir_js": "^1.0.0-beta.19",
+    "js-sha3": "^0.12.0"
   },
   "devDependencies": {
     "@types/node": "^24.7.2",

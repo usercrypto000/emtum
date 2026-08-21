@@ -7,7 +7,9 @@ export type LeafPreimage = {
   action_type: bigint;
   scope: bigint;
   expiry: bigint;
-  agent_salt: bigint;
+  val_low: bigint;
+  val_high: bigint;
+  leaf_salt: bigint;
 };
 
 export function loadCompiledCircuit(artifactPath: string): CompiledCircuit {
@@ -49,7 +51,14 @@ export async function hashFields(bb: Barretenberg, fields: bigint[]): Promise<bi
 }
 
 export async function hashLeaf(bb: Barretenberg, leaf: LeafPreimage): Promise<bigint> {
-  return hashFields(bb, [leaf.action_type, leaf.scope, leaf.expiry, leaf.agent_salt]);
+  return hashFields(bb, [
+    leaf.action_type,
+    leaf.scope,
+    leaf.expiry,
+    leaf.val_low,
+    leaf.val_high,
+    leaf.leaf_salt,
+  ]);
 }
 
 export async function hashPair(bb: Barretenberg, left: bigint, right: bigint): Promise<bigint> {
@@ -69,4 +78,15 @@ export async function computeMerkleRootFromPath(
   }
 
   return current;
+}
+
+export function maskScope(keccakHash: bigint): bigint {
+  return keccakHash & ((1n << 250n) - 1n);
+}
+
+export function splitValue(value: bigint): { val_low: bigint; val_high: bigint } {
+  return {
+    val_low: value & ((1n << 128n) - 1n),
+    val_high: value >> 128n,
+  };
 }
